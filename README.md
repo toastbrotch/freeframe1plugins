@@ -1,6 +1,6 @@
 # FreeFrame 1 Effects for Resolume 2.41
 
-After several years of not playing any/much VJ-gigs I recently re-started and went with [Resolume 2.41](https://resolume.com/download/file?file=resolume-2-41-installer.exe), which I very much loved back in the days. I tried to find all the effects I used but started to miss some, so I built these [FreeFrame 1.0](https://freeframe.sourceforge.net/) effects for Resolume 2.41 together with [Claude](https://claude.ai). Cross-compiled to 32-bit Windows DLLs from Linux using MinGW.
+After several years of not playing any/much VJ-gigs [I](https://kompiuterzeugs.com/) recently re-started and went with [Resolume 2.41](https://resolume.com/download/file?file=resolume-2-41-installer.exe) from 2007, which I very much loved back in the days. I tried to find all the effects I used but started to miss some, so I built these [FreeFrame 1.0](https://freeframe.sourceforge.net/) effects for Resolume 2.41 together with [Claude](https://claude.ai). Cross-compiled to 32-bit Windows DLLs from Linux using MinGW.
 
 
 [check here all Effects ready to download with previews](https://toastbrotch.github.io/freeframe1plugins/)
