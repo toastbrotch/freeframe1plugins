@@ -9,7 +9,7 @@ After several years of not playing any/much VJ-gigs I recently re-started and we
 Notes:
 * Find the build instructions in each plugin-folder/README.md
 * howto convert Resolume 2.41 recordings to mp4 <br />
-  ```` ffmpeg -i 2026-04-06-20-33-08.avi -c:a copy -c:v vp9 -b:v 100K 002-colorreduce.mp4 ````
+  ```` ffmpeg -i 2026-04-06-20-33-49.avi -c:v libx264 -crf 23 -c:a aac -pix_fmt yuv420p bla.mp4 ````
 
 
 <br />
