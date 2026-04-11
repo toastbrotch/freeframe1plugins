@@ -1,0 +1,9 @@
+; FrameDiff.def
+; Exports plugMain so Resolume can find the single entry point.
+; plugMain is defined inside FFPluginSDK.cpp (the SDK file).
+; You do not write plugMain yourself — the SDK does it for you.
+
+LIBRARY "FrameDiff"
+
+EXPORTS
+    plugMain

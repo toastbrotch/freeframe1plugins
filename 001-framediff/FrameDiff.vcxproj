@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Visual Studio 2019/2022 project file for FrameDiff
+  Works with the free Community edition.
+
+  To open: File → Open → Project/Solution → FrameDiff.vcxproj
+  To build: Build → Build Solution  (or Ctrl+Shift+B)
+  Output:   Release\FrameDiff.dll
+-->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}</ProjectGuid>
+    <RootNamespace>FrameDiff</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <!-- ======================================================
+       Release configuration
+       ====================================================== -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>   <!-- builds a .dll -->
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>                 <!-- VS 2022; change to v142 for 2019 -->
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+
+  <!-- ======================================================
+       Debug configuration
+       ====================================================== -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <!-- ======================================================
+       Release settings
+       ====================================================== -->
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <!-- Static runtime — no MSVC runtime DLL dependency -->
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <!-- .def file makes sure plugMain is exported with the right name -->
+      <ModuleDefinitionFile>FrameDiff.def</ModuleDefinitionFile>
+      <OutputFile>$(OutDir)FrameDiff.dll</OutputFile>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- ======================================================
+       Debug settings
+       ====================================================== -->
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <ModuleDefinitionFile>FrameDiff.def</ModuleDefinitionFile>
+      <OutputFile>$(OutDir)FrameDiff.dll</OutputFile>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- ======================================================
+       Source files
+       ====================================================== -->
+  <ItemGroup>
+    <ClCompile Include="FrameDiff.cpp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="FreeFrame.h" />
+    <ClInclude Include="FrameDiff.h" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="FrameDiff.def" />
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+</Project>

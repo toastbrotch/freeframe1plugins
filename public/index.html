@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FreeFrame 1 Effects for Resolume 2.41</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e0e;
+      --surface: #181818;
+      --border: #2a2a2a;
+      --accent: #c8ff00;
+      --text: #e0e0e0;
+      --muted: #666;
+      --radius: 6px;
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      padding: 3rem 1.5rem;
+    }
+
+    header {
+      max-width: 860px;
+      margin: 0 auto 4rem;
+    }
+
+    header h1 {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      color: var(--accent);
+      letter-spacing: 0.03em;
+      margin-bottom: 1rem;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      max-width: 820px;
+    }
+
+    header p a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    header p a:hover {
+      text-decoration: underline;
+    }
+
+    .effects {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 3rem;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .card-media {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .placeholder {
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-right: 1px solid var(--border);
+    }
+
+    .placeholder:last-child {
+      border-right: none;
+    }
+
+    .placeholder img,
+    .placeholder video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+
+    .card-number {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .card-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 1.2rem;
+    }
+
+    .card-params {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.4rem;
+    }
+
+    .tag {
+      background: #222;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.75rem;
+      color: #aaa;
+      letter-spacing: 0.04em;
+    }
+
+    .download-btn {
+      display: inline-block;
+      padding: 0.55rem 1.2rem;
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-family: var(--font);
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .download-btn:hover {
+      background: var(--accent);
+      color: #000;
+    }
+
+    footer {
+      max-width: 860px;
+      margin: 5rem auto 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+
+    @media (max-width: 540px) {
+      .card-media {
+        grid-template-columns: 1fr;
+      }
+      .placeholder {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .placeholder:last-child {
+        border-bottom: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>FreeFrame 1 Effects for Resolume 2.41</h1>
+    <p>
+      After several years of not playing any/much VJ-Giggs i recently re-started to do some and went with Resolume 2.41, 
+      which i very much loved back in the days. I tried to find all the effects i used but started to miss some, so I built these 
+      <a href="https://freeframe.sourceforge.net/" target="_blank">FreeFrame 1.0</a>
+      effects for <a href="https://resolume.com/download/file?file=resolume-2-41-installer.exe" target="_blank">Resolume 2.41 (Download)</a> together with
+      <a href="https://claude.ai" target="_blank">Claude</a>.
+      Cross-compiled to 32-bit Windows DLLs from Linux using MinGW.
+      <br /><br />Instructions: Just drop the <code>.dll</code> into your Resolume 2.41 FreeFrame folder 
+      and you're good: <code>C:\Programs (x86)\Resolume2.41\Addons</code>.
+    </p>
+  </header>
+
+  <div class="effects">
+
+    <!-- 001 FrameDiff -->
+    <div class="card">
+      <div class="card-media">
+        <div class="placeholder">
+          <img src="001-framediff.png" alt="FrameDiff preview">
+        </div>
+        <div class="placeholder">
+          <video src="001-framediff.mp4" controls loop muted playsinline></video>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-number">001</div>
+        <div class="card-title">FrameDiff</div>
+        <p class="card-desc">
+          Subtracts a delayed copy of the frame from the current frame, then doubles the
+          difference and clamps it. Motion lights up; still areas go dark. One slider controls
+          the delay (1–30 frames).
+        </p>
+        <div class="card-params">
+          <span class="tag">FrameDelay — 1–30 frames</span>
+        </div>
+        <a class="download-btn" href="FrameDiff.dll">Download FrameDiff.dll</a>
+      </div>
+    </div>
+
+    <!-- 002 ColorReduce -->
+    <div class="card">
+      <div class="card-media">
+        <div class="placeholder">
+          <img src="002-colorreduce.png" alt="ColorReduce preview">
+        </div>
+        <div class="placeholder">
+          <video src="002-colorreduce.mp4" controls loop muted playsinline></video>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-number">002</div>
+        <div class="card-title">ColorReduce</div>
+        <p class="card-desc">
+          Finds the N most dominant colours in the frame and remaps every pixel to its nearest
+          one — a posterisation that stays true to the actual palette of the image. One slider
+          controls how many colours survive (2–64).
+        </p>
+        <div class="card-params">
+          <span class="tag">Colors — 2–64</span>
+        </div>
+        <a class="download-btn" href="ColorReduce.dll">Download ColorReduce.dll</a>
+      </div>
+    </div>
+
+    <!-- 003 Rings -->
+    <div class="card">
+      <div class="card-media">
+        <div class="placeholder">
+          <img src="003-rings.png" alt="Rings preview">
+        </div>
+        <div class="placeholder">
+          <video src="003-rings.mp4" controls loop muted playsinline></video>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-number">003</div>
+        <div class="card-title">Rings</div>
+        <p class="card-desc">
+          Draws concentric rings centred in the frame. Pixels that fall inside a ring are
+          colour-inverted; pixels in the gaps between rings are left untouched.
+          Three sliders let you dial in the count, width and spacing of the rings.
+        </p>
+        <div class="card-params">
+          <span class="tag">NumRings — 1–50</span>
+          <span class="tag">RingWidth — 1–255 px</span>
+          <span class="tag">GapWidth — 1–255 px</span>
+        </div>
+        <a class="download-btn" href="Rings.dll">Download Rings.dll</a>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    FreeFrame 1.0 &mdash; built with MinGW i686 on Linux &mdash; tested in Resolume 2.41 on Windows 11 &mdash; made with Claude
+  </footer>
+
+</body>
+</html>

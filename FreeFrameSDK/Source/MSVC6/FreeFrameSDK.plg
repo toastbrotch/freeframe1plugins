@@ -1,0 +1,37 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: FreeFrameSDK - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x410 /fo"Release/FreeFrameSDK.res" /i "Res" /d "NDEBUG" "D:\Users\Gualtiero\Software\Released\FreeFrame\FreeFrameSDK\MSVC6 Source\FreeFrameSDK VC6 20041110\Res\FreeFrameSDK.rc"" 
+Creating temporary file "C:\DOCUME~1\GUALTI~1\IMPOST~1\Temp\RSP171.tmp" with contents
+[
+/nologo /ML /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Fp"Release/FreeFrameSDK.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c 
+"D:\Users\Gualtiero\Software\Released\FreeFrame\FreeFrameSDK\MSVC6 Source\FreeFrameSDK VC6 20041110\FFPluginInfo.cpp"
+"D:\Users\Gualtiero\Software\Released\FreeFrame\FreeFrameSDK\MSVC6 Source\FreeFrameSDK VC6 20041110\FFPluginInfoData.cpp"
+"D:\Users\Gualtiero\Software\Released\FreeFrame\FreeFrameSDK\MSVC6 Source\FreeFrameSDK VC6 20041110\FFPluginManager.cpp"
+"D:\Users\Gualtiero\Software\Released\FreeFrame\FreeFrameSDK\MSVC6 Source\FreeFrameSDK VC6 20041110\FFPluginSDK.cpp"
+"D:\Users\Gualtiero\Software\Released\FreeFrame\FreeFrameSDK\MSVC6 Source\FreeFrameSDK VC6 20041110\FreeFrame.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\GUALTI~1\IMPOST~1\Temp\RSP171.tmp" 
+Creating command line "link.exe -lib /nologo /out:"Release\FreeFrameSDK.lib"  ".\Release\FFPluginInfo.obj" ".\Release\FFPluginInfoData.obj" ".\Release\FFPluginManager.obj" ".\Release\FFPluginSDK.obj" ".\Release\FreeFrame.obj" ".\Release\FreeFrameSDK.res" "
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+FFPluginInfo.cpp
+FFPluginInfoData.cpp
+FFPluginManager.cpp
+FFPluginSDK.cpp
+FreeFrame.cpp
+Creating library...
+
+
+
+<h3>Results</h3>
+FreeFrameSDK.lib - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

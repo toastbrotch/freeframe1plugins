@@ -1,0 +1,308 @@
+//
+// Copyright (c) 2004 - InfoMus Lab - DIST - University of Genova
+//
+// InfoMus Lab (Laboratorio di Informatica Musicale)
+// DIST - University of Genova 
+//
+// http://www.infomus.dist.unige.it
+// news://infomus.dist.unige.it
+// mailto:staff@infomus.dist.unige.it
+//
+// Developer: Gualtiero Volpe
+// mailto:volpe@infomus.dist.unige.it
+//
+// Last modified: 2004-11-10
+//
+
+#ifndef FFPLUGINMANAGER_STANDARD
+#define FFPLUGINMANAGER_STANDARD
+
+
+#include "FreeFrame.h"
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \class		CFFPluginManager
+///	\brief		CFFPluginManager manages information concerning a plugin inputs, parameters, and capabilities.
+/// \author		Gualtiero Volpe
+/// \date		20041110
+/// \version	1.0.0.2
+///
+/// The CFFPluginManager class is the base class for FreeFrame plugins developed with the FreeFrame SDK since it provides 
+/// them with methods for automatically manage information concerning plugin inputs, paramaters, and capabilities. 
+/// Examples of information managed by this class are the number of inputs and parameters of a plugin; the name, type and 
+/// default value of each parameter; the image formats a plugin supports; the supported optimizations. 
+/// Plugins developed with the FreeFrame SDK (and thus having this class as base class) should call the protected methods 
+/// of this class in order to specify the information related to their inputs, parameters and capabilities. These calls 
+/// are usually done while constructing the plugin subclass. Plugins subclasses should also call methods of this class in 
+/// order to get information about the images they are going to process (i.e., their width, height, depth, orientation). 
+/// The defualt implementations of the FreeFrame gloabal functions call the public methods of this class in order to 
+/// return to the host information about a plugin inputs, parameters, and capabilities.
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class CFFPluginManager {
+
+public:
+
+	/// \enum	FormatsFlags
+	/// \brief	Flags indicating which image formats a plugin supports.
+	///
+	/// CFFPluginManager::FormatsFlags enumerates flags indicating which image formats a plugin supports. 
+	/// According to the FreeFrame specification three image formats are allowed: RGB16, RGB24, RGB32. 
+	/// The values of this enum are used to exchange information with the host on the formats a plugin supports. 
+	/// A plugin may support more than one image format. 
+	enum FormatsFlags {
+		FF_RGB_16 = 0x1,			///<  The plugin supports RGB16 image format
+		FF_RGB_24 = 0x2,			///<  The plugin supports RGB24 image format
+		FF_RGB_32 = 0x4				///<  The plugin supports RGB32 image format
+	};
+
+	/// \enum	OptimizationFlags
+	/// \brief	Flags indicating which optimizations a plugin supports.
+	///
+	/// CFFPluginManager::OptimizationFlags enumerates flags indicating which optimizations a plugin supports. 
+	///	According to the FreeFrame specification a plugin may be optimized either for in place processing, 
+	/// or for ProcessFrameCopy processing, or for both or none of them. Values of this enum are used to exchange 
+	/// information with the host on the optimizations a plugin supports. 
+	enum OptimizationFlags {
+		FF_OPT_NONE		= 0x1,		///<  No particular optimization is supported by this plugin
+		FF_OPT_INPLACE	= 0x2,		///<  This plugin is optimized for in place processing
+		FF_OPT_COPY		= 0x4,		///<  This plugin is optimized for ProcessFrameCopy processing
+		FF_OPT_BOTH		= 0x8		///<  This plugin is optimized for both kinds of processing
+	};
+
+	/// The standard destructor of CFFPluginManager.
+	virtual ~CFFPluginManager();
+
+	/// This method is called to know if the plugin supports ProcessFrameCopy working mode. 
+	/// It is usually called by the default implementations of the FreeFrame global functions.
+	///
+	/// \return		True if the plugin supports ProcessFrameCopy mode, 
+	///				false if only in place working mode is supported. 
+	bool IsProcessFrameCopySupported() const;
+	
+	/// This method is called to know which formats the plugin supports. It is usually called by 
+	/// the default implementations of the FreeFrame global functions. Its return value should be checked 
+	/// against the flags defined by the CFFPluginManager::FormatsFlags enumeration.
+	///
+	/// \return		A combination of flags as defined by the CFFPluginManager::FormatsFlags enumeration. 
+	DWORD GetSupportedFormat() const;
+
+	/// This method is called to know which optimizations the plugin supports.
+	/// It is usually called by the default implementations of the FreeFrame global functions.
+	/// Its return value should be cheked agianst the flags defined by the 
+	/// CFFPluginManager::OptimizationFlags enumeration.
+	///
+	/// \return		A combination of flags as defined by the CFFPluginManager::OptimizationFlags enumeration.
+	DWORD GetSupportedOptimization() const;
+	
+	/// This method returns the minimum number of inputs the host must provide. 
+	/// It is usually called by the default implementations of the FreeFrame global functions.
+	///
+	/// \return		The minimum number of inputs the host must provide.	
+	int GetMinInputs() const;
+	
+	/// This method returns the maximum number of inputs the plugin can receive. 
+	/// It is usually called by the default implementations of the FreeFrame global functions.
+	///
+	/// \return		The maximum number of inputs the plugin can receive.
+	int GetMaxInputs() const;
+	
+	/// This method returns how may parameters the plugin has. 
+	/// It is usually called by the default implementations of the FreeFrame global functions.	
+	///
+	/// \return		The number of parameters of the plugin.
+	int GetNumParams() const;
+	
+	/// This method returns the name of the plugin parameter whose index is passed as parameter 
+	/// to the method. It is usually called by the default implementations of the FreeFrame global functions.
+	///
+	/// \param	dwIndex		The index of the plugin parameter whose name is queried. 
+	///						It should be in the range [0, Number of plugin parameters).
+	/// \return				The name of the plugin parameter whose index is passed to the method. 
+	///						The return value is a pointer to an array of 16 1-byte ASCII characters, 
+	///						not null terminated (see FreeFrame specification). NULL is returned on error.
+	char* GetParamName(DWORD dwIndex) const;
+	
+	/// This method is called to know the type of the plugin parameter whose index is passed as parameter 
+	/// to the method. It is usually called by the default implementations of the FreeFrame global functions.
+	///
+	/// \param	dwIndex		The index of the plugin parameter whose name is queried. 
+	///						It should be in the range [0, Number of plugin parameters).
+	/// \return				The type of the plugin parameter whose index is passed as parameter to the method. 
+	///						Codes for allowed parameter types are defined in FreeFrame.h. 
+	///						In case of error, FF_FAIL is returned. 
+	DWORD GetParamType(DWORD dwIndex) const;
+
+	/// This method is called to get the default value of the plugin parameter whose index is passed as parameter 
+	/// to the method. It is usually called by the default implementations of the FreeFrame global functions.
+	///
+	/// \param	dwIndex		The index of the plugin parameter whose name is queried. 
+	///						It should be in the range [0, Number of plugin parameters).
+	/// \return				The default value of the plugin parameter whose index is passed as parameter to the method. 
+	///						The return value should be cast either to a char* in case of text parameters or to a float* 
+	///						in any other case. In case of error, NULL is returned.
+	void* GetParamDefault(DWORD dwIndex) const;
+
+	/// This method is called to provide the plugin with information about the images it is going to process. 
+	/// It is usually called by the default implementations of the FreeFrame global functions once the host 
+	/// communicated the format of the images that have to be processed.
+	///
+	/// \param	pVideoInfo	A pointer to a VideoInfoStruct (see definition in FreeFrame.h) containing information 
+	///						about the width, height, depth, and orientation of the images the plugin is going to receive.
+	void SetVideoInfo(const VideoInfoStruct* pVideoInfo);
+
+
+protected:
+
+	///	The standard constructor of CFFPluginManager. 
+	/// \remark	Notice that the CFFPluginManager constructor is a protected member function, i.e., nor CFFPluginManager 
+	///			objects nor CFreeFramePlugin objects should be created directly, but only objects of the subclasses 
+	///			implementing specific plugins should be instantiated.
+	CFFPluginManager();
+
+	/// This method is called by a plugin subclass, derived from this class, to indicate whether ProcessFrameCopy mode 
+	/// is supported. This method is usually called when a plugin object is instantiated (i.e., in the plugin subclass 
+	/// constructor).
+	///
+	/// \param	bIsSupported	The plugin subclass should set it either to true if ProcessFrameCopy mode is supported, 
+	///							or to false if only in place processing is supported. 
+	void SetProcessFrameCopySupported(bool bIsSupported);
+
+	/// This method is called by a plugin subclass to indicate which image formats the plugin supports. 
+	/// This method is usually called when a plugin object is instantiated (i.e., in the plugin subclass constructor).
+	///
+	/// \param	dwFlags		The plugin subclass should set it to a combination of the flags defined by the 
+	///						CFFPluginManager::FormatsFlags enum. More than one image format may be supported.
+	void SetSupportedFormats(DWORD dwFlags);
+
+	/// This method is called by a plugin subclass, derived from this class, to indicate which optimizations 
+	/// the plugin supports. This method is usually called when a plugin object is instantiated (i.e., in 
+	/// the plugin subclass constructor).
+	///
+	/// \param	dwFlags		The plugin subclass should set it to a combination of the flags defined by the 
+	///						CFFPluginManager::OptimizationFlags enumeration.
+	void SetSupportedOptimizations(DWORD dwFlags);
+	
+	/// This method is called by a plugin subclass, derived from this class, to indicate the minimum number 
+	/// of inputs the host must provide. This method is usually called when a plugin object is instantiated 
+	/// (i.e., in the plugin subclass constructor).
+	///
+	/// \param	iMinInputs	The plugin subclass should set it to the minimum number of inputs 
+	///						the host must provide.
+	void SetMinInputs(int iMinInputs);
+	
+	/// This method is called by a plugin subclass, derived from this class, to indicate the maximum number 
+	/// of inputs the plugin can receive. This method is usually called when a plugin object is instantiated 
+	/// (i.e., in the plugin subclass constructor).
+	///
+	/// \param	iMaxInputs	The plugin subclass should set it to the maximum number of inputs the plugin 
+	///						can receive.
+	void SetMaxInputs(int iMaxInputs);
+
+	/// This method is called by a plugin subclass, derived from this class, to specify name, type, and default 
+	/// value of the plugin parameter whose index is passed as parameter to the method. This method is usually 
+	/// called when a plugin object is instantiated (i.e., in the plugin subclass contructor). This version of 
+	/// the SetParamInfo function (DefaultValue of type float) should be called for all types of plugin parameters 
+	/// except for text, boolean, and event parameters.
+	///
+	/// \param	dwIndex			Index of the plugin parameter whose data are specified.
+	///							It should be in the range [0, Number of plugin parameters).
+	/// \param	pchName			A string containing the name of the plugin parameter.
+	///							According to the FreeFrame specification it should be at most 16 1-byte ASCII 
+	///							characters long. Longer strings will be truncated at the 16th character.
+	/// \param	dwType			The type of the plugin parameter. Codes for allowed types are defined in FreeFrame.h.
+	/// \param	fDefaultValue	The default value of the plugin parameter. According to the FreeFrame
+	///							specification it must be a float in the range [0, 1].
+	void SetParamInfo(DWORD dwIndex, const char* pchName, DWORD dwType, float fDefaultValue);
+	
+	/// This method is called by a plugin subclass, derived from this class, to specify name, type, and default 
+	/// value of the plugin parameter whose index is passed as parameter to the method. This method is usually 
+	/// called when a plugin object is instantiated (i.e., in the plugin subclass contructor). This version of 
+	/// the SetParamInfo function (DefaultValue of type bool) should be called for plugin parameters of type 
+	/// boolean or event.
+	///
+	/// \param	dwIndex			Index of the plugin parameter whose data are specified.
+	///							It should be in the range [0, Number of plugin parameters).
+	/// \param	pchName			A string containing the name of the plugin parameter.
+	///							According to the FreeFrame specification it should be at most 16 1-byte ASCII 
+	///							characters long. Longer strings will be truncated at the 16th character.
+	/// \param	dwType			The type of the plugin parameter. Codes for allowed types are defined in FreeFrame.h.
+	/// \param	bDefaultValue	The boolean default value of the plugin parameter.
+	void SetParamInfo(DWORD dwIndex, const char* pchName, DWORD dwType, bool bDefaultValue);
+
+	/// This method is called by a plugin subclass, derived from this class, to specify name, type, and default 
+	/// value of the plugin parameter whose index is passed as parameter to the method. This method is usually 
+	/// called when a plugin object is instantiated (i.e., in the plugin subclass contructor). This version of 
+	/// the SetParamInfo function (DefaultValue of type char*) should be called for plugin parameters of type text.
+	///
+	/// \param	dwIndex			Index of the plugin parameter whose data are specified.
+	///							It should be in the range [0, Number of plugin parameters).
+	/// \param	pchName			A string containing the name of the plugin parameter.
+	///							According to the FreeFrame specification it should be at most 16 1-byte ASCII 
+	///							characters long. Longer strings will be truncated at the 16th character.
+	/// \param	dwType			The type of the plugin parameter. Codes for allowed types are defined in FreeFrame.h.
+	/// \param	pchDefaultValue	A string to be used as the default value of the plugin parameter.
+	void SetParamInfo(DWORD dwIndex, const char* pchName, DWORD dwType, const char* pchDefaultValue);
+
+	/// This method is called by a plugin subclass, derived from this class, to know the width of the images 
+	/// that it will have to process. This method is usually called before starting processing frames.
+	///
+	/// \return	The width of the images the plugin will have to process.
+	int GetFrameWidth() const;
+	
+	/// This method is called by a plugin subclass, derived from this class, to know the height of the images 
+	/// that it will have to process. This method is usually called before starting processing frames.
+	///
+	/// \return The height of the images the plugin will have to process.
+	int GetFrameHeight() const;
+
+	/// This method is called by a plugin subclass, derived from this class, to know the depth of the images 
+	/// that it will have to process. This method is usually called before starting processing frames.
+	///
+	/// \return The depth of the images the plugin will have to process, where 0 is 16 bits, 1 is 24 bits,
+	///			2 is 32 bits (see FreeFrame specification).
+	DWORD GetFrameDepth() const;
+
+	/// This method is called by a plugin subclass, derived from this class, to know the orientation of the 
+	/// images that it will have to process. This method is usually called before starting processing frames.
+	///
+	/// \return The orientation of the images the plugin will have to process, where 1 is top left and 2 is
+	///			bottom left (see FreeFrame specification).
+	DWORD GetFrameOrientation() const;
+
+private:
+		
+	// Structure for keeping information about each plugin parameter
+	typedef struct ParamInfoStruct {
+		DWORD ID;							
+		char Name[16];					
+		DWORD dwType;					
+		float DefaultValue;				
+		char* StrDefaultValue;			
+		ParamInfoStruct* pNext;	
+	} ParamInfo;
+
+	// Information on paramters and pointers to ParamInfo list
+	int m_NParams;
+	ParamInfo* m_pFirst;
+	ParamInfo* m_pLast;
+
+	// Plugin capabilities
+	bool m_bIsProcessFrameCopySupported;
+	DWORD m_dwSupportedFormats;
+	DWORD m_dwSupportedOptimizations;
+	
+	// Inputs
+	int m_iMinInputs;
+	int m_iMaxInputs;
+
+	// Information on the incoming images
+	VideoInfoStruct m_VideoInfo;
+};
+
+
+#include "FFPluginManager_inl.h"
+
+#endif
+

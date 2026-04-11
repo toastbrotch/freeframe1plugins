@@ -1,0 +1,4 @@
+; ColorReduce.def
+LIBRARY "ColorReduce"
+EXPORTS
+    plugMain
