@@ -172,6 +172,28 @@
       padding-top: 1.5rem;
     }
 
+    .pair-plugins {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .pair-plugin-title {
+      font-size: 0.95rem;
+      color: var(--text);
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.02em;
+    }
+
+    @media (max-width: 700px) {
+      .pair-plugins {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 540px) {
       .card-media {
         grid-template-columns: 1fr;
@@ -221,10 +243,10 @@
         <p class="card-desc">
           Subtracts a delayed copy of the frame from the current frame, then doubles the
           difference and clamps it. Motion lights up; still areas go dark. One slider controls
-          the delay (1–30 frames).
+          the delay (1-30 frames).
         </p>
         <div class="card-params">
-          <span class="tag">FrameDelay : 1–30 frames</span>
+          <span class="tag">FrameDelay : 1-30 frames</span>
         </div>
         <a class="download-btn" href="FrameDiff.dll">Download FrameDiff.dll</a>
       </div>
@@ -246,10 +268,10 @@
         <p class="card-desc">
           Finds the N most dominant colours in the frame and remaps every pixel to its nearest
           one - a posterisation that stays true to the actual palette of the image. One slider
-          controls how many colours survive (2–64).
+          controls how many colours survive (2-64).
         </p>
         <div class="card-params">
-          <span class="tag">Colors : 2–64</span>
+          <span class="tag">Colors : 2-64</span>
         </div>
         <a class="download-btn" href="ColorReduce.dll">Download ColorReduce.dll</a>
       </div>
@@ -274,9 +296,9 @@
           Three sliders let you dial in the count, width and spacing of the rings.
         </p>
         <div class="card-params">
-          <span class="tag">NumRings : 1–50</span>
-          <span class="tag">RingWidth : 1–255 px</span>
-          <span class="tag">GapWidth : 1–255 px</span>
+          <span class="tag">NumRings : 1-50</span>
+          <span class="tag">RingWidth : 1-255 px</span>
+          <span class="tag">GapWidth : 1-255 px</span>
         </div>
         <a class="download-btn" href="Rings.dll">Download Rings.dll</a>
       </div>
@@ -301,12 +323,179 @@
           swing the lines from horizontal to vertical and everywhere in between.
         </p>
         <div class="card-params">
-          <span class="tag">NumLines : 1–50</span>
-          <span class="tag">LineWidth : 1–255 px</span>
-          <span class="tag">GapWidth : 1–255 px</span>
-          <span class="tag">Angle : 0–180 deg</span>
+          <span class="tag">NumLines : 1-50</span>
+          <span class="tag">LineWidth : 1-255 px</span>
+          <span class="tag">GapWidth : 1-255 px</span>
+          <span class="tag">Angle : 0-180 deg</span>
         </div>
         <a class="download-btn" href="Lines.dll">Download Lines.dll</a>
+      </div>
+    </div>
+
+    <!-- 005 LineEmitter -->
+    <!--
+    <div class="card">
+      <div class="card-media">
+        <div class="placeholder">
+          <img src="005-lineemitter.png" alt="LineEmitter preview">
+        </div>
+        <div class="placeholder">
+          <video src="005-lineemitter.mp4" controls loop muted playsinline></video>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-number">005</div>
+        <div class="card-title">LineEmitter</div>
+        <p class="card-desc">
+          Full-width horizontal lines that continuously scroll upward from the bottom of the
+          frame. Pixels inside a line are colour-inverted; gaps are left untouched. Line width
+          equals gap width — one BandWidth slider controls both. A perspective Scale slider
+          warps the spacing so lines grow or shrink as they travel, and a Speed slider sets
+          how fast they move.
+        </p>
+        <div class="card-params">
+          <span class="tag">NumLines — 1-50</span>
+          <span class="tag">BandWidth — 1-128 px</span>
+          <span class="tag">Scale — 0.2x-5.0x</span>
+          <span class="tag">Speed — 0-15 u/fr</span>
+        </div>
+        <a class="download-btn" href="LineEmitter.dll">Download LineEmitter.dll</a>
+      </div>
+    </div>
+    -->
+
+    <!-- 010 + 011 + 012 Buffer System -->
+    <div class="card card-pair">
+      <div class="card-body">
+        <div class="card-number">010 + 011 + 012</div>
+        <div class="card-title">Buffer System</div>
+        <p class="card-desc">
+          Three plugins that share a common pool of three named memory slots (A, B, C)
+          and together break Resolume 2.41's strictly linear signal flow.
+        </p>
+        <p class="card-desc">
+          <strong>BufferCapture</strong> writes the current frame into a slot and lets
+          you control what it returns — black, the original frame, or any blend between
+          them via the Passthru slider. Use it wherever you want to tap the signal.
+          <strong>BufferCrossfade</strong> reads any two slots and outputs a blend
+          between them — the live clip is replaced entirely by the buffer mix.
+          <strong>BufferReceiver</strong> blends one slot against the live clip running
+          through it — one side of the crossfade is always what is playing right now.
+          Unwritten slots output black.
+        </p>
+
+        <p class="card-desc">
+          Resolume 2.41's standard routing is fixed:
+          three clips → per-clip effects → layer mix → three global effects, top to bottom.
+          Every step happens in order; you cannot tap the signal mid-chain or route it
+          sideways. These plugins change that.
+        </p>
+
+        <p class="card-desc" style="font-style:italic; margin-bottom:0.6rem;">Some things you can now do that aren't otherwise possible:</p>
+
+        <ul class="card-desc" style="padding-left:1.2rem; margin-bottom:1.2rem;">
+          <li style="margin-bottom:0.5rem;">
+            <strong>Wet/dry for global effects.</strong>
+            Capture the clean mix to BufferA before a heavy effect, capture the processed
+            result to BufferB after it. BufferCrossfade anywhere in the chain blends the
+            two — a wet/dry knob that FreeFrame effects don't natively have.
+          </li>
+          <li style="margin-bottom:0.5rem;">
+            <strong>Overlay a buffer onto a live clip.</strong>
+            Put BufferCapture on one clip to freeze a moment into a slot. On any other
+            clip, use BufferReceiver to crossfade that frozen frame into the live output.
+            The live clip keeps playing; the Mix slider dials in how much of the capture
+            shows through.
+          </li>
+          <li style="margin-bottom:0.5rem;">
+            <strong>Freeze and recall.</strong>
+            Capture a moment to a buffer, keep performing live, and crossfade back to
+            the frozen frame at any point. Standard Resolume has no frame-hold.
+          </li>
+          <li style="margin-bottom:0.5rem;">
+            <strong>Effect chain branching.</strong>
+            Tap the signal at two different points in your global effect chain into
+            separate slots, then crossfade between those two snapshots — a blend between
+            two different depths of processing.
+          </li>
+          <li>
+            <strong>Feedback loop.</strong>
+            Set BufferCapture's Passthru to full at the end of the global chain — the
+            frame passes through while being written to a slot. On the next frame,
+            BufferCrossfade earlier in the chain blends that output back into the live
+            signal. Each frame is a mix of now and a moment ago: trails, smearing and
+            accumulation that build over time. The Mix slider controls how much of the
+            previous frame survives, from subtle echo to near-frozen persistence.
+          </li>
+        </ul>
+
+        <div class="pair-plugins">
+          <div class="pair-plugin">
+            <div class="pair-plugin-title">BufferCapture</div>
+            <div class="card-params">
+              <span class="tag">Target — A / B / C</span>
+              <span class="tag">Passthru — black → passthru</span>
+            </div>
+            <a class="download-btn" href="BufferCapture.dll">Download BufferCapture.dll</a>
+          </div>
+          <div class="pair-plugin">
+            <div class="pair-plugin-title">BufferCrossfade</div>
+            <div class="card-params">
+              <span class="tag">Source1 — A / B / C</span>
+              <span class="tag">Source2 — A / B / C</span>
+              <span class="tag">Mix — 0-100%</span>
+            </div>
+            <a class="download-btn" href="BufferCrossfade.dll">Download BufferCrossfade.dll</a>
+          </div>
+          <div class="pair-plugin">
+            <div class="pair-plugin-title">BufferReceiver</div>
+            <div class="card-params">
+              <span class="tag">Source — A / B / C</span>
+              <span class="tag">Mix — 0% (clip) → 100% (buffer)</span>
+            </div>
+            <a class="download-btn" href="BufferReceiver.dll">Download BufferReceiver.dll</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 013 NDIOut -->
+    <div class="card">
+      <div class="card-body">
+        <div class="card-number">013</div>
+        <div class="card-title">NDIOut</div>
+        <p class="card-desc">
+          A silent passthrough effect that simultaneously broadcasts the current clip as an
+          NDI video source on the local network. The clip is not visually altered — NDI
+          output is a side-effect. Any NDI receiver on the same network (OBS, vMix,
+          NDI Monitor, another Resolume) will see a source named
+          <strong>Resolume 2.41</strong> and can pull it in live.
+        </p>
+        <p class="card-desc">
+          Drop it on a clip to stream that clip, on a layer effect slot to stream the
+          layer output, or on a global effect slot to stream the full mix.
+        </p>
+
+        <p class="card-desc" style="font-style:italic; margin-bottom:0.5rem;">Setup — one-time install on the Windows machine:</p>
+        <ol class="card-desc" style="padding-left:1.2rem; margin-bottom:1.2rem;">
+          <li style="margin-bottom:0.5rem;">
+            Download and run the <strong>NDI 6 Tools</strong> installer from
+            <a href="https://ndi.video/tools/ndi-core-suite/" target="_blank" style="color:var(--accent);">ndi.video</a>.
+            This installs <code>Processing.NDI.Lib.x86.dll</code> and sets the
+            <code>NDI_RUNTIME_DIR_V6</code> environment variable that NDIOut uses to
+            find it at startup.
+          </li>
+        </ol>
+        <p class="card-desc" style="margin-bottom:1.2rem;">
+          If the NDI runtime is not installed, the plugin loads silently and the clip
+          passes through — Resolume will not crash.
+        </p>
+
+        <div class="card-params">
+          <span class="tag">Active — off - on</span>
+        </div>
+        <a class="download-btn" href="NDIOut.dll">Download NDIOut.dll</a>
       </div>
     </div>
 

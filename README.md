@@ -8,6 +8,7 @@ After several years of not playing any/much VJ-gigs [I](https://kompiuterzeugs.c
 
 Notes:
 * Find the build instructions in each plugin-folder/README.md
+* Find the original FreeFrameSDK Version 1 in the FreeFrameSDK Folder
 * howto convert Resolume 2.41 recordings to mp4 <br />
   ```` ffmpeg -i 2026-04-06-20-33-49.avi -c:v libx264 -crf 23 -c:a aac -pix_fmt yuv420p bla.mp4 ````
 
