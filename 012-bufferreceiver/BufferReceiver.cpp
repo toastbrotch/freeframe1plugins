@@ -1,15 +1,15 @@
 // ============================================================
 //  BufferReceiver.cpp
-//  FreeFrame 1.0 plugin — crossfades the current clip with one
-//  of three named shared-memory buffers (A, B or C) written by
-//  BufferCapture (010).
+//  FreeFrame 1.0 source plugin — outputs one of three named
+//  shared-memory buffers (A, B or C) written by BufferCapture
+//  (010) directly as a Resolume video source.
 //
 //  Parameters:
 //    Source : 0.0–1.0  →  A (0.0–0.33) | B (0.33–0.67) | C (0.67–1.0)
-//    Mix    : 0.0–1.0  →  0.0 = full current clip, 1.0 = full buffer
 //
-//  If the selected buffer is unavailable or has wrong dimensions
-//  the output is the unmodified current clip.
+//  If the selected buffer is unavailable the output is black.
+//  If the buffer dimensions differ from the canvas a nearest-
+//  neighbour scale is applied automatically.
 //
 //  See FFSharedBuf.h for the shared memory contract.
 // ============================================================
@@ -26,22 +26,16 @@ BufferReceiverPlugin::BufferReceiverPlugin()
 {
     SetProcessFrameCopySupported(false);
     SetSupportedFormats(FF_RGB_24);
-    SetSupportedOptimizations(FF_OPT_NONE);
-    SetMinInputs(1);
-    SetMaxInputs(1);
+    SetSupportedOptimizations(FF_OPT_INPLACE);
+    SetMinInputs(0);
+    SetMaxInputs(0);
 
     SetParamInfo(PARAM_SOURCE,
                  "Source",
                  FF_TYPE_STANDARD,
                  DEFAULT_SOURCE_NORM);
 
-    SetParamInfo(PARAM_MIX,
-                 "Mix",
-                 FF_TYPE_STANDARD,
-                 DEFAULT_MIX_NORM);
-
     mSourceNorm    = DEFAULT_SOURCE_NORM;
-    mMixNorm       = DEFAULT_MIX_NORM;
     mDisplayBuf[0] = '\0';
 
     for (int i = 0; i < 3; i++) { mHnd[i] = NULL; mPtr[i] = NULL; }
@@ -64,49 +58,54 @@ BufferReceiverPlugin::~BufferReceiverPlugin()
 }
 
 // ============================================================
-//  ProcessFrame
+//  ProcessFrame — pFrame is the OUTPUT buffer (source mode)
 // ============================================================
-
-static const BYTE* validPixels(void* ptr, DWORD expectW, DWORD expectH)
-{
-    if (!ptr) return NULL;
-    const FFBufHeader* hdr = (const FFBufHeader*)ptr;
-    if (!hdr->valid)            return NULL;
-    if (hdr->width  != expectW) return NULL;
-    if (hdr->height != expectH) return NULL;
-    return (const BYTE*)ptr + FF_BUF_PIXEL_OFFSET;
-}
-
 DWORD BufferReceiverPlugin::ProcessFrame(void* pFrame)
 {
-    if (GetFrameDepth() != FF_DEPTH_24) return FF_FAIL;
-
     DWORD W        = GetFrameWidth();
     DWORD H        = GetFrameHeight();
-    DWORD numBytes = W * H * 3;
+    DWORD outBytes = W * H * 3;
+    BYTE* out      = (BYTE*)pFrame;
 
-    int slot = normToSlot(mSourceNorm);
-    const BYTE* buf = validPixels(mPtr[slot], W, H);
+    int   slot = normToSlot(mSourceNorm);
+    void* ptr  = mPtr[slot];
 
-    // If buffer unavailable, pass clip through unmodified
-    if (!buf) return FF_SUCCESS;
+    if (!ptr) {
+        memset(out, 0, outBytes);
+        return FF_SUCCESS;
+    }
 
-    int mix255 = (int)(mMixNorm * 255.0f + 0.5f);
-    if (mix255 < 0)   mix255 = 0;
-    if (mix255 > 255) mix255 = 255;
+    const FFBufHeader* hdr = (const FFBufHeader*)ptr;
+    if (!hdr->valid || hdr->width == 0 || hdr->height == 0) {
+        memset(out, 0, outBytes);
+        return FF_SUCCESS;
+    }
 
-    BYTE* clip = (BYTE*)pFrame;
+    DWORD srcW = hdr->width;
+    DWORD srcH = hdr->height;
+    const BYTE* src = (const BYTE*)ptr + FF_BUF_PIXEL_OFFSET;
 
-    if (mix255 == 0) {
-        // Full clip — nothing to do
-    } else if (mix255 == 255) {
-        // Full buffer
-        memcpy(clip, buf, numBytes);
+    if (srcW == W && srcH == H) {
+        // Dimensions match — direct copy
+        memcpy(out, src, outBytes);
     } else {
-        // Blend: clip*(255-mix) + buf*mix
-        int inv = 255 - mix255;
-        for (DWORD i = 0; i < numBytes; i++) {
-            clip[i] = (BYTE)(((int)clip[i] * inv + (int)buf[i] * mix255) >> 8);
+        // Nearest-neighbour scale to canvas size
+        BYTE* dstRow = out;
+        for (DWORD y = 0; y < H; y++) {
+            DWORD srcY = (DWORD)((float)y * (float)srcH / (float)H);
+            if (srcY >= srcH) srcY = srcH - 1;
+            const BYTE* srcRow = src + (size_t)srcY * srcW * 3;
+            BYTE* dst = dstRow;
+            for (DWORD x = 0; x < W; x++) {
+                DWORD srcX = (DWORD)((float)x * (float)srcW / (float)W);
+                if (srcX >= srcW) srcX = srcW - 1;
+                const BYTE* px = srcRow + srcX * 3;
+                dst[0] = px[0];
+                dst[1] = px[1];
+                dst[2] = px[2];
+                dst += 3;
+            }
+            dstRow += W * 3;
         }
     }
 
@@ -118,43 +117,28 @@ DWORD BufferReceiverPlugin::ProcessFrame(void* pFrame)
 // ============================================================
 DWORD BufferReceiverPlugin::GetParameter(DWORD index)
 {
+    if (index != PARAM_SOURCE) return FF_FAIL;
     DWORD dwRet;
-    float val;
-    switch (index) {
-        case PARAM_SOURCE: val = mSourceNorm; break;
-        case PARAM_MIX:    val = mMixNorm;    break;
-        default: return FF_FAIL;
-    }
-    memcpy(&dwRet, &val, 4);
+    memcpy(&dwRet, &mSourceNorm, 4);
     return dwRet;
 }
 
 DWORD BufferReceiverPlugin::SetParameter(const SetParameterStruct* pParam)
 {
-    if (pParam == NULL) return FF_FAIL;
+    if (!pParam || pParam->ParameterNumber != PARAM_SOURCE) return FF_FAIL;
     float val;
     memcpy(&val, &pParam->NewParameterValue, 4);
     if (val < 0.0f) val = 0.0f;
     if (val > 1.0f) val = 1.0f;
-    switch (pParam->ParameterNumber) {
-        case PARAM_SOURCE: mSourceNorm = val; return FF_SUCCESS;
-        case PARAM_MIX:    mMixNorm    = val; return FF_SUCCESS;
-        default: return FF_FAIL;
-    }
+    mSourceNorm = val;
+    return FF_SUCCESS;
 }
 
 char* BufferReceiverPlugin::GetParameterDisplay(DWORD index)
 {
-    switch (index) {
-        case PARAM_SOURCE:
-            sprintf(mDisplayBuf, "Buf %s", slotName(normToSlot(mSourceNorm)));
-            return mDisplayBuf;
-        case PARAM_MIX:
-            sprintf(mDisplayBuf, "%d%%", (int)(mMixNorm * 100.0f + 0.5f));
-            return mDisplayBuf;
-        default:
-            return NULL;
-    }
+    if (index != PARAM_SOURCE) return NULL;
+    sprintf(mDisplayBuf, "Buf %s", slotName(normToSlot(mSourceNorm)));
+    return mDisplayBuf;
 }
 
 // ============================================================

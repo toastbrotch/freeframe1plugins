@@ -5,10 +5,8 @@
 #include "FFSharedBuf.h"
 
 #define PARAM_SOURCE  0
-#define PARAM_MIX     1
 
 #define DEFAULT_SOURCE_NORM  0.0f   // slot A
-#define DEFAULT_MIX_NORM     0.5f   // 50/50
 
 class BufferReceiverPlugin : public CFreeFramePlugin
 {
@@ -23,7 +21,6 @@ public:
 
 private:
     float  mSourceNorm;
-    float  mMixNorm;
 
     // Shared memory handles and mapped pointers for all 3 buffers
     HANDLE mHnd[3];

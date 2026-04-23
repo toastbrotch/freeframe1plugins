@@ -16,10 +16,10 @@ CFFPluginInfo g_PluginInfo(
     0,                      // FF API minor version
     1,                      // plugin major version
     0,                      // plugin minor version
-    FF_EFFECT,
-    "Crossfades the current clip with one of three shared buffers (A/B/C) "
-    "written by BufferCapture (010). Mix 0 = full clip, Mix 1 = full buffer.",
-    "BufferReceiver v1.0 - FreeFrame 1.0 plugin",
+    FF_SOURCE,
+    "Outputs one of three shared buffers (A/B/C) written by BufferCapture (010) "
+    "as a Resolume video source. Use the Source slider to select A, B, or C.",
+    "BufferReceiver v2.0 - FreeFrame 1.0 plugin",
     0,
     NULL
 );
