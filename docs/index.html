@@ -499,6 +499,50 @@
       </div>
     </div>
 
+<<<<<<< HEAD
+=======
+
+    <!-- 014 NDIIn -->
+    <div class="card">
+      <div class="card-body">
+        <div class="card-number">014</div>
+        <div class="card-title">NDIIn</div>
+        <p class="card-desc">
+          A FreeFrame source that receives any NDI stream on the network and
+          feeds it directly into Resolume as a video source. The Source slider
+          steps through all currently visible NDI sources; the parameter display
+          shows the name of the selected source. The source list refreshes
+          automatically every two seconds — new senders appear without any
+          interaction needed.
+        </p>
+        <p class="card-desc">
+          Works seamlessly with <strong>NDIOut</strong>: capture one clip with
+          NDIOut, receive it in another clip (or even another machine on the
+          same network) with NDIIn.
+        </p>
+        <p class="card-desc" style="font-style:italic; margin-bottom:0.5rem;">Setup — same one-time install as NDIOut:</p>
+        <ol class="card-desc" style="padding-left:1.2rem; margin-bottom:1.2rem;">
+          <li style="margin-bottom:0.5rem;">
+            Install <strong>NDI 6 Tools</strong> from
+            <a href="https://ndi.video/tools/ndi-core-suite/" target="_blank" style="color:var(--accent);">ndi.video</a>
+            to get <code>Processing.NDI.Lib.x86.dll</code> and the
+            <code>NDI_RUNTIME_DIR_V6</code> environment variable.
+          </li>
+        </ol>
+        <p class="card-desc" style="margin-bottom:1.2rem;">
+          If the NDI runtime is not installed the plugin outputs a black frame —
+          Resolume will not crash.
+        </p>
+        <div class="card-params">
+          <div class="param-row">
+            <span class="tag">Source — Selects the NDI source by position in the discovered list.</span>
+          </div>
+        </div>
+        <a class="download-btn" href="NDIIn.dll">Download NDIIn.dll</a>
+      </div>
+    </div>
+
+>>>>>>> 15369a2 (first working ndi but buggy)
   </div>
 
   <footer>
