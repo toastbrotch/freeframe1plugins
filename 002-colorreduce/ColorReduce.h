@@ -4,7 +4,9 @@
 #include "FFPluginSDK.h"
 
 #define PARAM_COLORS        0
+#define PARAM_PALROT        1
 #define DEFAULT_COLORS_NORM 0.1f   // default near 2 so effect is obvious
+#define DEFAULT_PALROT_NORM 0.0f   // no rotation
 
 #define MIN_COLORS   2
 #define MAX_COLORS  64             // beyond 64 the effect is invisible
@@ -31,6 +33,7 @@ public:
 
 private:
     float   mColorsNorm;
+    float   mPalRotNorm;
     char    mDisplayBuf[32];
 };
 

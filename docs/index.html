@@ -241,7 +241,7 @@
       </div>
       <div class="card-body">
         <div class="card-number">001</div>
-        <div class="card-title">FrameDiff</div>
+        <div class="card-title">FrameDiff v0.2</div>
         <p class="card-desc">
           Subtracts a delayed copy of the frame from the current frame. Motion lights up white;
           still areas go dark. The Hardness slider collapses the greyscale toward pure black and
@@ -268,14 +268,16 @@
       </div>
       <div class="card-body">
         <div class="card-number">002</div>
-        <div class="card-title">ColorReduce</div>
+        <div class="card-title">ColorReduce v0.2</div>
         <p class="card-desc">
           Finds the N most dominant colours in the frame and remaps every pixel to its nearest
-          one - a posterisation that stays true to the actual palette of the image. One slider
-          controls how many colours survive (2-64).
+          one — a posterisation that stays true to the actual palette of the image. The Pal.Rotate
+          slider cycles through the N palette slots, swapping which colour gets assigned where —
+          same number of colours, completely different hues.
         </p>
         <div class="card-params">
           <span class="tag">Colors : 2-64</span>
+          <span class="tag">Pal.Rotate : 0-100%</span>
         </div>
         <a class="download-btn" href="ColorReduce.dll">Download FreeFrame Effect ColorReduce.dll</a>
       </div>
@@ -293,7 +295,7 @@
       </div>
       <div class="card-body">
         <div class="card-number">003</div>
-        <div class="card-title">Rings</div>
+        <div class="card-title">Rings v0.1</div>
         <p class="card-desc">
           Draws concentric rings centred in the frame. Pixels that fall inside a ring are
           colour-inverted; pixels in the gaps between rings are left untouched.
@@ -320,7 +322,7 @@
       </div>
       <div class="card-body">
         <div class="card-number">004</div>
-        <div class="card-title">Lines</div>
+        <div class="card-title">Lines v0.1</div>
         <p class="card-desc">
           Draws full-width inverting lines across the frame. Pixels that fall insideDownload  a line are
           colour-inverted; pixels in the gaps are left untouched. A rotation slider lets you
@@ -372,7 +374,7 @@
     <div class="card card-pair">
       <div class="card-body">
         <div class="card-number">010 + 011 + 012</div>
-        <div class="card-title">Buffer System</div>
+        <div class="card-title">Buffer System v0.1</div>
         <p class="card-desc">
           Three plugins that share a common pool of three named memory slots (A, B, C)
           and together break Resolume 2.41's strictly linear signal flow.
@@ -467,7 +469,7 @@
     <div class="card">
       <div class="card-body">
         <div class="card-number">013</div>
-        <div class="card-title">NDIOut</div>
+        <div class="card-title">NDIOut v0.1</div>
         <p class="card-desc">
           A silent passthrough effect that simultaneously broadcasts the current clip/stream as an
           NDI video source on the local network. The clip is not visually altered — NDI
@@ -506,7 +508,7 @@
     <div class="card">
       <div class="card-body">
         <div class="card-number">014</div>
-        <div class="card-title">NDIIn</div>
+        <div class="card-title">NDIIn v0.1</div>
         <p class="card-desc">
           A FreeFrame source that receives any NDI stream on the network and
           feeds it directly into Resolume as a video source. The Source slider

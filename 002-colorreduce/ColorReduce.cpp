@@ -41,7 +41,13 @@ ColorReducePlugin::ColorReducePlugin()
                  FF_TYPE_STANDARD,
                  DEFAULT_COLORS_NORM);
 
+    SetParamInfo(PARAM_PALROT,
+                 "Pal.Rotate",
+                 FF_TYPE_STANDARD,
+                 DEFAULT_PALROT_NORM);
+
     mColorsNorm    = DEFAULT_COLORS_NORM;
+    mPalRotNorm    = DEFAULT_PALROT_NORM;
     mDisplayBuf[0] = '\0';
 }
 
@@ -149,8 +155,13 @@ DWORD ColorReducePlugin::ProcessFrame(void* pFrame)
     sortTopN(palCounts, palR, palG, palB, palSize, useN);
 
     // ----------------------------------------------------------
-    //  Step 4: Remap every pixel to nearest dominant colour
+    //  Step 4: Remap every pixel to nearest dominant colour,
+    //          then apply palette rotation (circular index shift).
+    //          shift=0 → no change; shift=k → pixel that would
+    //          get palette[j] gets palette[(j+k) % useN] instead.
     // ----------------------------------------------------------
+    int shift = (int)(mPalRotNorm * (float)useN) % useN;
+
     src = p;
     for (DWORD i = 0; i < pixels; i++) {
         int r = src[0], g = src[1], b = src[2];
@@ -162,9 +173,10 @@ DWORD ColorReducePlugin::ProcessFrame(void* pFrame)
             if (d < bestDist) { bestDist = d; bestIdx = j; }
         }
 
-        src[0] = palR[bestIdx];
-        src[1] = palG[bestIdx];
-        src[2] = palB[bestIdx];
+        int rotIdx = (bestIdx + shift) % useN;
+        src[0] = palR[rotIdx];
+        src[1] = palG[rotIdx];
+        src[2] = palB[rotIdx];
         src += 3;
     }
 
@@ -177,34 +189,50 @@ DWORD ColorReducePlugin::ProcessFrame(void* pFrame)
 DWORD ColorReducePlugin::GetParameter(DWORD index)
 {
     DWORD dwRet;
-    if (index == PARAM_COLORS) {
-        memcpy(&dwRet, &mColorsNorm, 4);
-        return dwRet;
+    float val;
+    switch (index) {
+    case PARAM_COLORS: val = mColorsNorm; break;
+    case PARAM_PALROT: val = mPalRotNorm; break;
+    default: return FF_FAIL;
     }
-    return FF_FAIL;
+    memcpy(&dwRet, &val, 4);
+    return dwRet;
 }
 
 DWORD ColorReducePlugin::SetParameter(const SetParameterStruct* pParam)
 {
     if (pParam == NULL) return FF_FAIL;
-    if (pParam->ParameterNumber == PARAM_COLORS) {
-        memcpy(&mColorsNorm, &pParam->NewParameterValue, 4);
-        if (mColorsNorm < 0.0f) mColorsNorm = 0.0f;
-        if (mColorsNorm > 1.0f) mColorsNorm = 1.0f;
-        return FF_SUCCESS;
+    float val;
+    memcpy(&val, &pParam->NewParameterValue, 4);
+    if (val < 0.0f) val = 0.0f;
+    if (val > 1.0f) val = 1.0f;
+    switch (pParam->ParameterNumber) {
+    case PARAM_COLORS: mColorsNorm = val; return FF_SUCCESS;
+    case PARAM_PALROT: mPalRotNorm = val; return FF_SUCCESS;
+    default: return FF_FAIL;
     }
-    return FF_FAIL;
 }
 
 char* ColorReducePlugin::GetParameterDisplay(DWORD index)
 {
-    if (index != PARAM_COLORS) return NULL;
-    int N = normToColors(mColorsNorm);
-    if (N >= MAX_COLORS)
-        sprintf(mDisplayBuf, "full");
-    else
-        sprintf(mDisplayBuf, "%d colors", N);
-    return mDisplayBuf;
+    switch (index) {
+    case PARAM_COLORS: {
+        int N = normToColors(mColorsNorm);
+        if (N >= MAX_COLORS)
+            sprintf(mDisplayBuf, "full");
+        else
+            sprintf(mDisplayBuf, "%d colors", N);
+        return mDisplayBuf;
+    }
+    case PARAM_PALROT: {
+        int N = normToColors(mColorsNorm);
+        int shift = (int)(mPalRotNorm * (float)N) % N;
+        sprintf(mDisplayBuf, "+%d/%d", shift, N);
+        return mDisplayBuf;
+    }
+    default:
+        return NULL;
+    }
 }
 
 // ============================================================
