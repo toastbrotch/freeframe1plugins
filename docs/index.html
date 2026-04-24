@@ -243,12 +243,14 @@
         <div class="card-number">001</div>
         <div class="card-title">FrameDiff</div>
         <p class="card-desc">
-          Subtracts a delayed copy of the frame from the current frame, then doubles the
-          difference and clamps it. Motion lights up; still areas go dark. One slider controls
-          the delay (1-30 frames).
+          Subtracts a delayed copy of the frame from the current frame. Motion lights up white;
+          still areas go dark. The Hardness slider collapses the greyscale toward pure black and
+          white — at full hardness any pixel that moved even one unit snaps to pure white, giving
+          a crisp, high-contrast silhouette (and a pleasantly grainy, noisy look at mid values).
         </p>
         <div class="card-params">
           <span class="tag">FrameDelay : 1-30 frames</span>
+          <span class="tag">Hardness : 0-100%</span>
         </div>
         <a class="download-btn" href="FrameDiff.dll">Download FreeFrame Effect FrameDiff.dll</a>
       </div>

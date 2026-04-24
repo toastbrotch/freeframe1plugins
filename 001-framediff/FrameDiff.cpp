@@ -32,8 +32,14 @@ FrameDiffPlugin::FrameDiffPlugin()
                  FF_TYPE_STANDARD,
                  DEFAULT_DELAY_NORM);
 
+    SetParamInfo(PARAM_HARDNESS,
+                 "Hardness",
+                 FF_TYPE_STANDARD,
+                 DEFAULT_HARD_NORM);
+
     // Init state
     mDelayNorm  = DEFAULT_DELAY_NORM;
+    mHardNorm   = DEFAULT_HARD_NORM;
     mWriteHead  = 0;
     mFrameBytes = 0;
 
@@ -104,7 +110,14 @@ DWORD FrameDiffPlugin::ProcessFrame(void* pFrame)
         int luma = (d0 * 299 + d1 * 587 + d2 * 114) / 1000;
         if (luma > 255) luma = 255;
 
-        BYTE v  = (BYTE)luma;
+        // Hardness: scale luma up so the range collapses toward pure black/white.
+        // scale = 1 at hardness=0 (soft, full greyscale) and 256 at hardness=1
+        // (hard: any nonzero luma → 255, zero stays 0).
+        float scale = 1.0f / (1.0f - mHardNorm + 1.0f / 256.0f);
+        int v255 = (int)((float)luma * scale + 0.5f);
+        if (v255 > 255) v255 = 255;
+
+        BYTE v  = (BYTE)v255;
         dst[0]  = v;
         dst[1]  = v;
         dst[2]  = v;
@@ -123,13 +136,14 @@ DWORD FrameDiffPlugin::ProcessFrame(void* pFrame)
 DWORD FrameDiffPlugin::GetParameter(DWORD index)
 {
     DWORD dwRet;
+    float val;
     switch (index) {
-    case PARAM_FRAMEDELAY:
-        memcpy(&dwRet, &mDelayNorm, 4);
-        return dwRet;
-    default:
-        return FF_FAIL;
+    case PARAM_FRAMEDELAY: val = mDelayNorm; break;
+    case PARAM_HARDNESS:   val = mHardNorm;  break;
+    default: return FF_FAIL;
     }
+    memcpy(&dwRet, &val, 4);
+    return dwRet;
 }
 
 // ============================================================
@@ -139,14 +153,14 @@ DWORD FrameDiffPlugin::SetParameter(const SetParameterStruct* pParam)
 {
     if (pParam == NULL) return FF_FAIL;
 
+    float val;
+    memcpy(&val, &pParam->NewParameterValue, 4);
+    if (val < 0.0f) val = 0.0f;
+    if (val > 1.0f) val = 1.0f;
     switch (pParam->ParameterNumber) {
-    case PARAM_FRAMEDELAY:
-        memcpy(&mDelayNorm, &pParam->NewParameterValue, 4);
-        if (mDelayNorm < 0.0f) mDelayNorm = 0.0f;
-        if (mDelayNorm > 1.0f) mDelayNorm = 1.0f;
-        return FF_SUCCESS;
-    default:
-        return FF_FAIL;
+    case PARAM_FRAMEDELAY: mDelayNorm = val; return FF_SUCCESS;
+    case PARAM_HARDNESS:   mHardNorm  = val; return FF_SUCCESS;
+    default: return FF_FAIL;
     }
 }
 
@@ -155,13 +169,21 @@ DWORD FrameDiffPlugin::SetParameter(const SetParameterStruct* pParam)
 // ============================================================
 char* FrameDiffPlugin::GetParameterDisplay(DWORD index)
 {
-    if (index != PARAM_FRAMEDELAY) return NULL;
-    int frames = normToFrames(mDelayNorm);
-    if (frames == 1)
-        sprintf(mDisplayBuf, "1 frame");
-    else
-        sprintf(mDisplayBuf, "%d frames", frames);
-    return mDisplayBuf;
+    switch (index) {
+    case PARAM_FRAMEDELAY: {
+        int frames = normToFrames(mDelayNorm);
+        if (frames == 1)
+            sprintf(mDisplayBuf, "1 frame");
+        else
+            sprintf(mDisplayBuf, "%d frames", frames);
+        return mDisplayBuf;
+    }
+    case PARAM_HARDNESS:
+        sprintf(mDisplayBuf, "%d%%", (int)(mHardNorm * 100.0f + 0.5f));
+        return mDisplayBuf;
+    default:
+        return NULL;
+    }
 }
 
 // ============================================================

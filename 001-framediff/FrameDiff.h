@@ -10,7 +10,9 @@
 #define MIN_DELAY_FRAMES    1
 #define MAX_DELAY_FRAMES    30
 #define PARAM_FRAMEDELAY    0
+#define PARAM_HARDNESS      1
 #define DEFAULT_DELAY_NORM  0.0f
+#define DEFAULT_HARD_NORM   0.0f
 
 inline int normToFrames(float norm) {
     if (norm < 0.0f) norm = 0.0f;
@@ -41,6 +43,7 @@ private:
     int     mWriteHead;
     DWORD   mFrameBytes;
     float   mDelayNorm;
+    float   mHardNorm;
     char    mDisplayBuf[32];
 };
 
