@@ -194,6 +194,37 @@
       }
     }
 
+    .toc-title {
+      margin-top: 1.5rem;
+      margin-bottom: 0.6rem;
+      color: var(--muted);
+    }
+
+    .toc {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+
+    .toc a {
+      display: inline-block;
+      background: #222;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .toc a:hover {
+      background: #2a2a2a;
+      border-color: var(--accent);
+    }
+
     @media (max-width: 540px) {
       .card-media {
         grid-template-columns: 1fr;
@@ -221,16 +252,25 @@
       Cross-compiled to 32-bit Windows DLLs from Linux using MinGW.
       <br /><br />Instructions: Just drop the <code>.dll</code> into your Resolume 2.41 FreeFrame folder 
       and you're good: <code>C:\Program Files (x86)\Resolume 2.41\plugins</code>
-      <br /><br />Pay attention: Some are effects you find in the effects-menu and can drop onto a clip or a global effect and some are sources (aka content-generators)
-      that appear in the source-menu and are used like clips so drop them into a clip-area!
+      <br /><br /><strong>Pay attention:</strong> some plugins are effects — find them in the effects menu and drop them onto a clip or a global effect slot. Others are sources (aka content generators) — find them in the source menu and drop them into a clip slot like any other clip.
       <br /><br />Source code: <a href="https://github.com/toastbrotch/freeframe1plugins"><svg aria-hidden="true" focusable="false" class="octicon octicon-mark-github" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" display="inline-block" overflow="visible" style="vertical-align:text-bottom"><path d="M12 1C5.9225 1 1 5.9225 1 12C1 16.8675 4.14875 20.9787 8.52125 22.4362C9.07125 22.5325 9.2775 22.2025 9.2775 21.9137C9.2775 21.6525 9.26375 20.7862 9.26375 19.865C6.5 20.3737 5.785 19.1912 5.565 18.5725C5.44125 18.2562 4.905 17.28 4.4375 17.0187C4.0525 16.8125 3.5025 16.3037 4.42375 16.29C5.29 16.2762 5.90875 17.0875 6.115 17.4175C7.105 19.0812 8.68625 18.6137 9.31875 18.325C9.415 17.61 9.70375 17.1287 10.02 16.8537C7.5725 16.5787 5.015 15.63 5.015 11.4225C5.015 10.2262 5.44125 9.23625 6.1425 8.46625C6.0325 8.19125 5.6475 7.06375 6.2525 5.55125C6.2525 5.55125 7.17375 5.2625 9.2775 6.67875C10.1575 6.43125 11.0925 6.3075 12.0275 6.3075C12.9625 6.3075 13.8975 6.43125 14.7775 6.67875C16.8813 5.24875 17.8025 5.55125 17.8025 5.55125C18.4075 7.06375 18.0225 8.19125 17.9125 8.46625C18.6138 9.23625 19.04 10.2125 19.04 11.4225C19.04 15.6437 16.4688 16.5787 14.0213 16.8537C14.42 17.1975 14.7638 17.8575 14.7638 18.8887C14.7638 20.36 14.75 21.5425 14.75 21.9137C14.75 22.2025 14.9563 22.5462 15.5063 22.4362C19.8513 20.9787 23 16.8537 23 12C23 5.9225 18.0775 1 12 1Z"></path></svg></a>
     </p>
+    <div class="toc-title">Plugins:</div>
+    <nav class="toc">
+      <a href="#p001">001 FrameDiff</a>
+      <a href="#p002">002 ColorReduce</a>
+      <a href="#p003">003 Rings</a>
+      <a href="#p004">004 Lines</a>
+      <a href="#p010">010+011+012 Buffer System</a>
+      <a href="#p013">013 NDIOut</a>
+      <a href="#p014">014 NDIIn</a>
+    </nav>
   </header>
 
   <div class="effects">
 
     <!-- 001 FrameDiff -->
-    <div class="card">
+    <div class="card" id="p001">
       <div class="card-media">
         <div class="placeholder">
           <img src="001-framediff.png" alt="FrameDiff preview">
@@ -257,7 +297,7 @@
     </div>
 
     <!-- 002 ColorReduce -->
-    <div class="card">
+    <div class="card" id="p002">
       <div class="card-media">
         <div class="placeholder">
           <img src="002-colorreduce.png" alt="ColorReduce preview">
@@ -284,7 +324,7 @@
     </div>
 
     <!-- 003 Rings -->
-    <div class="card">
+    <div class="card" id="p003">
       <div class="card-media">
         <div class="placeholder">
           <img src="003-rings.png" alt="Rings preview">
@@ -311,7 +351,7 @@
     </div>
 
     <!-- 004 Lines -->
-    <div class="card">
+    <div class="card" id="p004">
       <div class="card-media">
         <div class="placeholder">
           <img src="004-lines.png" alt="Lines preview">
@@ -371,7 +411,7 @@
     -->
 
     <!-- 010 + 011 + 012 Buffer System -->
-    <div class="card card-pair">
+    <div class="card card-pair" id="p010">
       <div class="card-body">
         <div class="card-number">010 + 011 + 012</div>
         <div class="card-title">Buffer System v0.1</div>
@@ -466,7 +506,7 @@
     </div>
 
     <!-- 013 NDIOut -->
-    <div class="card">
+    <div class="card" id="p013">
       <div class="card-body">
         <div class="card-number">013</div>
         <div class="card-title">NDIOut v0.1</div>
@@ -505,7 +545,7 @@
     </div>
 
     <!-- 014 NDIIn -->
-    <div class="card">
+    <div class="card" id="p014">
       <div class="card-body">
         <div class="card-number">014</div>
         <div class="card-title">NDIIn v0.1</div>
