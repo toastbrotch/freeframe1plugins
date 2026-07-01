@@ -261,6 +261,10 @@
       <a href="#p002">002 ColorReduce</a>
       <a href="#p003">003 Rings</a>
       <a href="#p004">004 Lines</a>
+      <!-- <a href="#p005">005 LineEmitter</a>-->
+      <a href="#p006">006 GlowParticles</a>
+      <a href="#p007">007 VHSGlitch</a>
+      <a href="#p008">008 RandomCrop</a>
       <a href="#p010">010+011+012 Buffer System</a>
       <a href="#p013">013 NDIOut</a>
       <a href="#p014">014 NDIIn</a>
@@ -380,7 +384,7 @@
 
     <!-- 005 LineEmitter -->
     <!--
-    <div class="card">
+    <div class="card" id="p005">
       <div class="card-media">
         <div class="placeholder">
           <img src="005-lineemitter.png" alt="LineEmitter preview">
@@ -391,24 +395,135 @@
       </div>
       <div class="card-body">
         <div class="card-number">005</div>
-        <div class="card-title">LineEmitter</div>
+        <div class="card-title">LineEmitter v1.1</div>
         <p class="card-desc">
-          Full-width horizontal lines that continuously scroll upward from the bottom of the
-          frame. Pixels inside a line are colour-inverted; gaps are left untouched. Line width
-          equals gap width — one BandWidth slider controls both. A perspective Scale slider
-          warps the spacing so lines grow or shrink as they travel, and a Speed slider sets
-          how fast they move.
+          Full-width horizontal lines that scroll across the frame. Pixels inside a line are
+          colour-inverted; gaps are left untouched. Line width and gap width are now
+          independent sliders, so you can dial in razor-thin lines with wide breathing room,
+          fat bars that nearly touch, or anything in between. Speed is bidirectional —
+          centre is stopped, right half scrolls upward, left half scrolls downward. The
+          perspective Scale slider warps the spacing logarithmically so lines appear to grow
+          or shrink as they travel, creating a vanishing-point tunnel effect.
         </p>
         <div class="card-params">
-          <span class="tag">NumLines — 1-50</span>
-          <span class="tag">BandWidth — 1-128 px</span>
-          <span class="tag">Scale — 0.2x-5.0x</span>
-          <span class="tag">Speed — 0-15 u/fr</span>
+          <span class="tag">NumLines : 1-50</span>
+          <span class="tag">LineWidth : 1-128 px</span>
+          <span class="tag">GapWidth : 1-128 px</span>
+          <span class="tag">Scale : 0.2x-5.0x perspective</span>
+          <span class="tag">Speed : −15 to +15 u/fr (centre = stopped)</span>
         </div>
-        <a class="download-btn" href="LineEmitter.dll">Download LineEmitter.dll</a>
+        <a class="download-btn" href="LineEmitter.dll">Download FreeFrame Effect LineEmitter.dll</a>
       </div>
     </div>
-    -->
+  -->
+
+    <!-- 006 GlowParticles -->
+    <div class="card" id="p006">
+      <div class="card-media">
+        <div class="placeholder">
+          <img src="006-glowparticles.png" alt="GlowParticles preview">
+        </div>
+        <div class="placeholder">
+          <video src="006-glowparticles.mp4" controls loop muted playsinline></video>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-number">006</div>
+        <div class="card-title">GlowParticles v1.0</div>
+        <p class="card-desc">
+          Bright pixels in the frame act as particle emitters. Each frame a batch of pixels
+          above the luminance threshold are sampled and spawn glowing particles that fly outward
+          in random directions. Every particle traces a straight path and fades from full
+          brightness at birth to black at the end of its lifetime — additively blended onto the
+          frame so clustered particles bloom white. The Hue slider cycles through the full colour
+          wheel at full saturation; Speed sets how fast particles travel; MaxAge controls how
+          long they live before disappearing.
+        </p>
+        <div class="card-params">
+          <span class="tag">Threshold : 0-100% luminance</span>
+          <span class="tag">Speed : 0.5-10.0 px/frame</span>
+          <span class="tag">MaxAge : 10-150 frames</span>
+          <span class="tag">Hue : 0-360 deg</span>
+        </div>
+        <a class="download-btn" href="GlowParticles.dll">Download FreeFrame Effect GlowParticles.dll</a>
+      </div>
+    </div>
+
+    <!-- 007 VHSGlitch -->
+    <div class="card" id="p007">
+      <div class="card-media">
+        <div class="placeholder">
+          <img src="007-vhsglitch.png" alt="VHSGlitch preview">
+        </div>
+        <div class="placeholder">
+          <video src="007-vhsglitch.mp4" controls loop muted playsinline></video>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-number">007</div>
+        <div class="card-title">VHSGlitch v1.0</div>
+        <p class="card-desc">
+          Stacks four classic VHS tape artefacts in one pass. All four effects are
+          independent — dial each to zero and the frame passes through clean; push them
+          together for full tape-meltdown.
+        </p>
+        <p class="card-desc">
+          <strong>Shift</strong> jitters every scan line left or right by a random amount —
+          most rows drift subtly, but 1 in 16 snaps to a large offset for the characteristic
+          VHS tape-snap look. <strong>Chroma</strong> separates the RGB channels horizontally:
+          red shifts left, blue shifts right, leaving colour fringing on every hard edge as
+          though the chroma signal arrived late. <strong>Noise</strong> turns a random
+          fraction of rows into static bands, blending them with white noise — the heavier
+          the slider, the more rows are hit and the denser the grain. <strong>Tracking</strong>
+          picks 1-4 horizontal slabs of the frame each frame and displaces them by a large
+          random amount sideways, mimicking a VHS head that can't find the tape path.
+        </p>
+        <div class="card-params">
+          <span class="tag">Shift : ±0-60 px scan-line jitter</span>
+          <span class="tag">Chroma : ±0-20 px RGB separation</span>
+          <span class="tag">Noise : 0-100% static band coverage</span>
+          <span class="tag">Tracking : 0-4 displaced blocks</span>
+        </div>
+        <a class="download-btn" href="VHSGlitch.dll">Download FreeFrame Effect VHSGlitch.dll</a>
+      </div>
+    </div>
+
+    <!-- 008 RandomCrop -->
+    <div class="card" id="p008">
+      <div class="card-media">
+        <div class="placeholder">
+          <img src="008-randomcrop.png" alt="RandomCrop preview">
+        </div>
+        <div class="placeholder">
+          <video src="008-randomcrop.mp4" controls loop muted playsinline></video>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-number">008</div>
+        <div class="card-title">RandomCrop v1.0</div>
+        <p class="card-desc">
+          An angled black band sweeps in from one side of the frame, covers up to MaxCrop
+          of the image, holds at that position, then retreats. Each cycle the direction
+          (left→right or right→left) and the tilt angle (±30° off horizontal) are picked
+          at random, so no two wipes look the same. The effect idles between cycles —
+          slower Speed means longer rests and gentler build-ups; faster Speed makes it
+          relentless.
+        </p>
+        <p class="card-desc">
+          The 4th parameter, Softness, feathers the advancing edge: at zero it is a
+          pixel-sharp cut; turned up it becomes a wide gradient blade that fades the image
+          to black over a quarter of the crop range. Low Softness reads as a hard digital
+          wipe; high Softness reads as a cinematic light leak or vignette sweep.
+        </p>
+        <div class="card-params">
+          <span class="tag">Speed : 0.005-0.15 /frame build rate</span>
+          <span class="tag">MaxCrop : 0-100% frame coverage at peak</span>
+          <span class="tag">Hold : 0-150 frames at maximum</span>
+          <span class="tag">Softness : 0-25% gradient edge zone</span>
+        </div>
+        <a class="download-btn" href="RandomCrop.dll">Download FreeFrame Effect RandomCrop.dll</a>
+      </div>
+    </div>
 
     <!-- 010 + 011 + 012 Buffer System -->
     <div class="card card-pair" id="p010">
