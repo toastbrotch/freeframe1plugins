@@ -19,7 +19,6 @@
 // Softness: 0→1 → 0–25% of crop range as a gradient fade zone at the edge
 
 #define MAX_HOLD_FRAMES  150
-#define TILT_DEG         30.0f   // ±max random tilt off horizontal sweep
 
 enum CropPhase { PH_IDLE, PH_BUILD, PH_HOLD, PH_RELEASE };
 

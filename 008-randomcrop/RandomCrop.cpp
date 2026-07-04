@@ -4,9 +4,9 @@
 //
 //  A black region sweeps across the frame from one side, covers
 //  up to MaxCrop of the image, holds, then retreats. Each cycle
-//  picks a random direction (left→right or right→left) and a
-//  random tilt of ±30° so the crop boundary is never the same
-//  diagonal twice. All four effects stack in one pixel pass.
+//  picks a fully random sweep angle (0–360°) so the crop can
+//  come in from any direction. All four effects stack in one
+//  pixel pass.
 //
 //  Geometry:
 //    A pixel at (x, y) is blacked out when its projection onto
@@ -44,9 +44,7 @@ float RandomCropPlugin::randFloat() {
 // ============================================================
 void RandomCropPlugin::beginCycle() {
     mCropPos = 0.0f;
-    float tilt      = (randFloat() - 0.5f) * 2.0f * TILT_DEG * (3.14159265f / 180.0f);
-    float baseAngle = (lcg() & 1u) ? 3.14159265f : 0.0f;  // left or right sweep
-    mAngle = baseAngle + tilt;
+    mAngle = randFloat() * 2.0f * 3.14159265f;
 }
 
 // ============================================================

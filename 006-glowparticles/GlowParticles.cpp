@@ -4,7 +4,7 @@
 //
 //  Bright pixels in the input frame act as particle emitters.
 //  Each particle gets a random 2-D direction and constant velocity.
-//  Particles are rendered as circular glow spots that fade linearly
+//  Particles are rendered as flat filled circles that fade linearly
 //  over their lifetime, additively blended onto the frame.
 //
 //  Parameters:
@@ -178,8 +178,8 @@ DWORD GlowParticlesPlugin::ProcessFrame(void* pFrame)
                 float d2 = dx * dx + dy2;
                 if (d2 > R2) continue;
 
-                // Quadratic radial falloff × age fade → additive blend
-                float alpha = (1.0f - d2 / R2) * brightness;
+                // Flat fill × age fade → additive blend
+                float alpha = brightness;
                 BYTE* pix   = row + gx * 3;
                 int   nr    = (int)pix[0] + (int)(alpha * fcr);
                 int   ng    = (int)pix[1] + (int)(alpha * fcg);
