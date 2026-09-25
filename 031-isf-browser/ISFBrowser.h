@@ -13,7 +13,12 @@
 #define PARAM_P3          3
 #define NUM_FF_PARAMS     4   // fixed FreeFrame interface
 
-#define MAX_ALL_INPUTS    12  // max ISF inputs we parse + expose in panel
+#define MAX_ALL_INPUTS    20  // max ISF inputs we parse + expose in panel — parseISFInputs
+                               // bounds-checks against this silently (no error), so a shader
+                               // with more INPUTS than this just has its tail dropped: any
+                               // uniform past the cap is unset in the preamble, which fails
+                               // to compile if the shader body still references it. Keep
+                               // headroom above what any of our .fs files actually declare.
 #define MAX_FS_FILES      128
 #define MAX_EXTRA_UNIFORMS 8  // unsupported types declared but not slider-controlled
 
