@@ -572,28 +572,30 @@
     <div class="card" id="p031">
       <div class="card-body">
         <div class="card-number">031</div>
-        <div class="card-title">ISF Browser v0.1</div>
+        <div class="card-title">ISF Browser v0.2</div>
         <p class="card-desc">
           A FreeFrame <em>source</em> that runs any ISF/GLSL shader from disk — no build
           tools needed on the Windows side. Drop <code>ISFBrowser.dll</code> and any
           number of <code>.fs</code> files into the same Resolume plugins folder.
-          The plugin scans the folder at startup and lets you switch between shaders
-          live with the Shader slider. Compatible with shaders from
+          The plugin scans the folder at startup and opens a popup panel listing every
+          shader found — click one to switch, live, with the shader's own name and a
+          preview of its parameters shown right there. Compatible with shaders from
           <a href="https://glslop.com/">glslop.com</a> (all CC0).
         </p>
         <p class="card-desc">
           Shader compilation happens on the GPU at switch time — expect a brief hitch
-          on complex shaders. The display field on the Shader slider shows
-          <em>2/5 shadername</em> so you always know what is loaded.
-          P1–P3 map to the first three float inputs of the active shader and are
-          automatically scaled to that shader's declared min/max range.
-          The display on each P slider shows the actual ISF input name and current value.
+          on complex shaders. All 4 of Resolume's sliders (P1–P4) are freely assignable:
+          next to every ISF input in the popup panel sit four small buttons, one per
+          Resolume slider. Click one to bind that input to that slider — it lights up
+          solid green so the connection is obvious at a glance, and binding a slider
+          elsewhere automatically frees it from wherever it was before. Each Resolume
+          slider's on-screen display shows the actual ISF input name and current value
+          of whatever it's currently bound to. Bindings default to the shader's first
+          4 inputs and reset to that default whenever you switch shaders.
         </p>
         <div class="card-params">
-          <span class="tag">Shader : selects .fs file (0=first, 1=last alphabetically) — live switch</span>
-          <span class="tag">P1 : first float input of active shader</span>
-          <span class="tag">P2 : second float input</span>
-          <span class="tag">P3 : third float input</span>
+          <span class="tag">P1–P4 : freely assignable to any of the active shader's inputs, via the popup panel</span>
+          <span class="tag">Shader switching : click a file in the popup panel's list (no longer a slider)</span>
         </div>
         <a class="download-btn" href="ISFBrowser.dll">Download FreeFrame Source ISFBrowser.dll</a>
       </div>

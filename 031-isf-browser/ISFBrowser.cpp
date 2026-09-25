@@ -75,6 +75,10 @@ static PFNGLDELETEFRAMEBUFFERSEXTPROC  glDeleteFramebuffersEXT_ = NULL;
 #define IDC_LBL_NAME   110
 #define IDC_LBL_P0     120   // IDC_LBL_P0 + i  (i = 0..MAX_ALL_INPUTS-1)
 #define IDC_TRACK_P0   140   // IDC_TRACK_P0 + i
+// One BS_AUTORADIOBUTTON|BS_PUSHLIKE per (input row, slot) pair, so the
+// currently-bound slot renders visibly pressed/highlighted. Row i's 4
+// buttons are IDC_BTN_SLOT0 + i*NUM_FF_PARAMS + s (s = 0..NUM_FF_PARAMS-1).
+#define IDC_BTN_SLOT0  160
 
 #define TRACK_RANGE    1000
 
@@ -271,15 +275,49 @@ static void syncTrackFromAllParams(HWND hwnd, ISFBrowserPlugin* self, int i)
         SendMessageA(ht, TBM_SETPOS, TRUE, (LPARAM)pos);
 }
 
+// Which Resolume slot (0..NUM_FF_PARAMS-1), if any, is currently bound to
+// ISF input i. Returns -1 if input i isn't bound to any slot.
+static int slotForInput(ISFBrowserPlugin* self, int i)
+{
+    for (int s = 0; s < NUM_FF_PARAMS; ++s)
+        if (self->mSlotToInput[s] == i) return s;
+    return -1;
+}
+
+static int slotBtnId(int i, int s) { return IDC_BTN_SLOT0 + i*NUM_FF_PARAMS + s; }
+
+// Forces a repaint of row i's 4 (owner-drawn) slot buttons so WM_DRAWITEM
+// re-reads mSlotToInput and reflects the current binding.
+static void syncSlotButtons(HWND hwnd, ISFBrowserPlugin* /*self*/, int i)
+{
+    for (int s = 0; s < NUM_FF_PARAMS; ++s)
+        InvalidateRect(GetDlgItem(hwnd, slotBtnId(i, s)), NULL, FALSE);
+}
+
+// Binds ISF input i to Resolume slot `slot` (or unbinds it if slot < 0),
+// evicting whichever input previously held that slot — each slot can only
+// point at one input at a time. Pushes the input's current value into
+// mParam right away so the Resolume UI doesn't show a stale number.
+static void assignSlot(ISFBrowserPlugin* self, int i, int slot)
+{
+    int oldSlot = slotForInput(self, i);
+    if (oldSlot >= 0) self->mSlotToInput[oldSlot] = -1;
+    if (slot >= 0) {
+        self->mSlotToInput[slot] = i;  // overwrite implicitly evicts any prior owner
+        self->mParam[slot] = self->mAllParams[i];
+    }
+}
+
 // ------------------------------------------------------------------
 // Panel — window procedure
 // ------------------------------------------------------------------
 LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
                                                   WPARAM wp, LPARAM lp)
 {
-    static HBRUSH hBrBg   = NULL;
-    static HBRUSH hBrList = NULL;
-    static HFONT  hFont   = NULL;
+    static HBRUSH hBrBg    = NULL;
+    static HBRUSH hBrList  = NULL;
+    static HBRUSH hBrGreen = NULL;  // active slot-button fill
+    static HFONT  hFont    = NULL;
 
     ISFBrowserPlugin* self =
         (ISFBrowserPlugin*)GetWindowLongA(hwnd, GWL_USERDATA);
@@ -290,9 +328,10 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
         self = (ISFBrowserPlugin*)((CREATESTRUCTA*)lp)->lpCreateParams;
         SetWindowLongA(hwnd, GWL_USERDATA, (LONG)(LONG_PTR)self);
 
-        if (!hBrBg)   hBrBg   = CreateSolidBrush(CLR_BG);
-        if (!hBrList) hBrList = CreateSolidBrush(CLR_LIST_BG);
-        if (!hFont)   hFont   = CreateFontA(14, 0, 0, 0, FW_NORMAL,
+        if (!hBrBg)    hBrBg    = CreateSolidBrush(CLR_BG);
+        if (!hBrList)  hBrList  = CreateSolidBrush(CLR_LIST_BG);
+        if (!hBrGreen) hBrGreen = CreateSolidBrush(CLR_TEXT);
+        if (!hFont)    hFont    = CreateFontA(14, 0, 0, 0, FW_NORMAL,
                                     FALSE, FALSE, FALSE,
                                     DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
                                     CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
@@ -317,15 +356,30 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
             8, 176, 286, 16, hwnd, (HMENU)IDC_LBL_NAME, NULL, NULL);
         SendMessageA(ln, WM_SETFONT, (WPARAM)hFont, FALSE);
 
-        // Pre-create MAX_ALL_INPUTS label+trackbar pairs (hidden initially)
+        // Pre-create MAX_ALL_INPUTS label+trackbar rows, each with 4 slot
+        // radio-buttons (P1-P4), hidden initially.
         char buf[80];
         for (int i = 0; i < MAX_ALL_INPUTS; ++i) {
             buildParamLabel(buf, sizeof(buf), self, i);
             HWND lbl = CreateWindowExA(0, "STATIC", buf,
                 WS_CHILD | SS_LEFT,   // not WS_VISIBLE yet
-                8, 0, 286, 15,
+                8, 0, 176, 15,
                 hwnd, (HMENU)(UINT_PTR)(IDC_LBL_P0 + i), NULL, NULL);
             SendMessageA(lbl, WM_SETFONT, (WPARAM)hFont, FALSE);
+
+            // BS_OWNERDRAW: exclusivity is our own bookkeeping (mSlotToInput),
+            // not the OS's radio-group logic — needed so WM_DRAWITEM can
+            // paint the active slot with a solid green fill + white text
+            // (plain BS_PUSHBUTTON/BS_PUSHLIKE controls ignore WM_CTLCOLORBTN
+            // and can't be given a custom face color any other way).
+            for (int s = 0; s < NUM_FF_PARAMS; ++s) {
+                char cap[4]; snprintf(cap, sizeof(cap), "%d", s + 1);
+                HWND sb = CreateWindowExA(0, "BUTTON", cap,
+                    WS_CHILD | BS_OWNERDRAW,   // not WS_VISIBLE yet
+                    190 + s*26, 0, 24, 18,
+                    hwnd, (HMENU)(UINT_PTR)slotBtnId(i, s), NULL, NULL);
+                SendMessageA(sb, WM_SETFONT, (WPARAM)hFont, FALSE);
+            }
 
             HWND trk = CreateWindowExA(0, TRACKBAR_CLASSA, NULL,
                 WS_CHILD | TBS_HORZ | TBS_NOTICKS,   // not WS_VISIBLE yet
@@ -382,13 +436,20 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
                 HWND lbl = GetDlgItem(hwnd, IDC_LBL_P0   + i);
                 HWND trk = GetDlgItem(hwnd, IDC_TRACK_P0 + i);
                 if (i < ic) {
-                    SetWindowPos(lbl, NULL, 8, y,       286, 15, SWP_NOZORDER);
-                    SetWindowPos(trk, NULL, 8, y + 17,  286, 22, SWP_NOZORDER);
+                    SetWindowPos(lbl, NULL, 8, y,      176, 15, SWP_NOZORDER);
+                    for (int s = 0; s < NUM_FF_PARAMS; ++s)
+                        SetWindowPos(GetDlgItem(hwnd, slotBtnId(i, s)), NULL,
+                                     190 + s*26, y - 1, 24, 18, SWP_NOZORDER);
+                    SetWindowPos(trk, NULL, 8, y + 17, 286, 22, SWP_NOZORDER);
                     ShowWindow(lbl, SW_SHOW);
+                    for (int s = 0; s < NUM_FF_PARAMS; ++s)
+                        ShowWindow(GetDlgItem(hwnd, slotBtnId(i, s)), SW_SHOW);
                     ShowWindow(trk, SW_SHOW);
                     y += 44;
                 } else {
                     ShowWindow(lbl, SW_HIDE);
+                    for (int s = 0; s < NUM_FF_PARAMS; ++s)
+                        ShowWindow(GetDlgItem(hwnd, slotBtnId(i, s)), SW_HIDE);
                     ShowWindow(trk, SW_HIDE);
                 }
             }
@@ -405,11 +466,12 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
             self->mPanelLastIC = ic;
         }
 
-        // Update labels + sync trackbars
+        // Update labels + slot-button pressed-state + sync trackbars
         char buf[80];
         for (int i = 0; i < ic; ++i) {
             buildParamLabel(buf, sizeof(buf), self, i);
             SetWindowTextA(GetDlgItem(hwnd, IDC_LBL_P0 + i), buf);
+            syncSlotButtons(hwnd, self, i);
             syncTrackFromAllParams(hwnd, self, i);
         }
         return 0;
@@ -423,8 +485,9 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
             int  pos = (int)SendMessageA(hCtrl, TBM_GETPOS, 0, 0);
             float v  = (float)pos / (float)TRACK_RANGE;
             self->mAllParams[i] = v;
-            // Keep FreeFrame P1/P2/P3 in sync
-            if (i < 3) self->mParam[PARAM_P1 + i] = v;
+            // Keep the Resolume slider in sync, if this input is bound to one
+            int slot = slotForInput(self, i);
+            if (slot >= 0) self->mParam[slot] = v;
             // Update label immediately
             char buf[80];
             buildParamLabel(buf, sizeof(buf), self, i);
@@ -439,6 +502,25 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
             // selection internally, so LB_GETCURSEL here may return the OLD
             // index.  Set a flag; WM_TIMER reads lb.cursel once it's settled.
             self->mUserClicked = true;
+        } else if (self && HIWORD(wp) == BN_CLICKED &&
+                   LOWORD(wp) >= IDC_BTN_SLOT0 &&
+                   LOWORD(wp) < IDC_BTN_SLOT0 + MAX_ALL_INPUTS*NUM_FF_PARAMS) {
+            // Direct per-slot buttons (PARAM_SHADER is just slot 0 here —
+            // shader switching lives in the file list now). Clicking the
+            // already-bound slot again disconnects it; clicking any other
+            // slot binds there, evicting whichever row previously held it.
+            int id = LOWORD(wp) - IDC_BTN_SLOT0;
+            int i  = id / NUM_FF_PARAMS;
+            int s  = id % NUM_FF_PARAMS;
+            bool wasActive = (slotForInput(self, i) == s);
+            assignSlot(self, i, wasActive ? -1 : s);
+
+            // The click target's own group auto-updates its pressed look,
+            // but an evicted row elsewhere needs its button un-pressed too —
+            // cheapest correct fix is to just resync every visible row.
+            int ic = self->mInputCount;
+            for (int k = 0; k < ic; ++k)
+                syncSlotButtons(hwnd, self, k);
         }
         return 0;
 
@@ -449,6 +531,28 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
             return 1;
         }
         break;
+
+    case WM_DRAWITEM: {
+        DRAWITEMSTRUCT* dis = (DRAWITEMSTRUCT*)lp;
+        int id = (int)dis->CtlID;
+        if (!self || id < IDC_BTN_SLOT0 || id >= IDC_BTN_SLOT0 + MAX_ALL_INPUTS*NUM_FF_PARAMS)
+            break;
+        int rel = id - IDC_BTN_SLOT0;
+        int i   = rel / NUM_FF_PARAMS;
+        int s   = rel % NUM_FF_PARAMS;
+        bool active = (slotForInput(self, i) == s);
+
+        FillRect(dis->hDC, &dis->rcItem, active ? hBrGreen : hBrList);
+        DrawEdge(dis->hDC, &dis->rcItem, active ? EDGE_SUNKEN : EDGE_RAISED, BF_RECT);
+
+        char cap[4];
+        GetWindowTextA(dis->hwndItem, cap, sizeof(cap));
+        SetBkMode(dis->hDC, TRANSPARENT);
+        SetTextColor(dis->hDC, active ? RGB(255, 255, 255) : CLR_DIM);
+        RECT r = dis->rcItem;
+        DrawTextA(dis->hDC, cap, -1, &r, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+        return TRUE;
+    }
 
     case WM_CTLCOLORLISTBOX: {
         HDC hdc = (HDC)wp;
@@ -557,10 +661,11 @@ ISFBrowserPlugin::ISFBrowserPlugin()
     SetMinInputs(0);
     SetMaxInputs(0);
 
-    mParam[PARAM_SHADER] = 0.0f;
+    mParam[PARAM_SHADER] = 0.5f;
     mParam[PARAM_P1]     = 0.5f;
     mParam[PARAM_P2]     = 0.5f;
     mParam[PARAM_P3]     = 0.5f;
+    for (int i = 0; i < NUM_FF_PARAMS; ++i) mSlotToInput[i] = i;  // default: slot i <- input i
 
     for (int i = 0; i < MAX_ALL_INPUTS; ++i) mAllParams[i]  = 0.5f;
     for (int i = 0; i < MAX_ALL_INPUTS; ++i) mLocP[i]       = -1;
@@ -574,14 +679,18 @@ ISFBrowserPlugin::ISFBrowserPlugin()
 
     strcpy(mShaderLabel,     "none");
     strcpy(mSharedShaderName,"none");
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < NUM_FF_PARAMS; ++i)
         snprintf(mSharedParamLabels[i], sizeof(mSharedParamLabels[i]), "P%d —", i+1);
     mDisplayBuf[0] = '\0';
 
-    SetParamInfo(PARAM_SHADER, "Shader", FF_TYPE_STANDARD, 0.0f);
-    SetParamInfo(PARAM_P1,     "P1",     FF_TYPE_STANDARD, 0.5f);
-    SetParamInfo(PARAM_P2,     "P2",     FF_TYPE_STANDARD, 0.5f);
-    SetParamInfo(PARAM_P3,     "P3",     FF_TYPE_STANDARD, 0.5f);
+    // All 4 are now uniform, freely-assignable ISF-input sliders (see
+    // mSlotToInput); shader switching lives entirely in the panel's file
+    // list, so none of these names are "special" anymore.
+    // 1-indexed to match the popup's "1/2/3/4" slot buttons exactly.
+    SetParamInfo(PARAM_SHADER, "P1", FF_TYPE_STANDARD, 0.5f);
+    SetParamInfo(PARAM_P1,     "P2", FF_TYPE_STANDARD, 0.5f);
+    SetParamInfo(PARAM_P2,     "P3", FF_TYPE_STANDARD, 0.5f);
+    SetParamInfo(PARAM_P3,     "P4", FF_TYPE_STANDARD, 0.5f);
 
     scanFiles();
     if (!mFsFiles.empty()) {
@@ -794,9 +903,13 @@ bool ISFBrowserPlugin::loadShader(int idx)
         if (norm > 1.0f) norm = 1.0f;
         mAllParams[i] = norm;
     }
-    // Sync first 3 back to FreeFrame params
-    for (int i = 0; i < 3 && i < mInputCount; ++i)
-        mParam[PARAM_P1 + i] = mAllParams[i];
+    // Reset slot bindings to the default "slot i <- input i" mapping on every
+    // (re)load — any custom assignment from a previous shader would otherwise
+    // point at the wrong input, or one that no longer exists.
+    for (int i = 0; i < NUM_FF_PARAMS; ++i)
+        mSlotToInput[i] = (i < mInputCount) ? i : -1;
+    for (int s = 0; s < NUM_FF_PARAMS; ++s)
+        if (mSlotToInput[s] >= 0) mParam[s] = mAllParams[mSlotToInput[s]];
 
     // Build preamble with ALL input uniforms
     std::string preamble =
@@ -915,16 +1028,17 @@ void ISFBrowserPlugin::updateSharedState()
     strncpy(mSharedShaderName, mShaderLabel, sizeof(mSharedShaderName) - 1);
     mSharedShaderName[sizeof(mSharedShaderName) - 1] = '\0';
 
-    for (int i = 0; i < 3; ++i) {
-        float t = mAllParams[i];
-        if (i < mInputCount) {
-            float val = mInputs[i].minVal
-                      + t * (mInputs[i].maxVal - mInputs[i].minVal);
-            snprintf(mSharedParamLabels[i], sizeof(mSharedParamLabels[i]),
-                     "%s=%.2f", mInputs[i].name, val);
+    for (int s = 0; s < NUM_FF_PARAMS; ++s) {
+        int inputIdx = mSlotToInput[s];
+        if (inputIdx >= 0 && inputIdx < mInputCount) {
+            float t   = mAllParams[inputIdx];
+            float val = mInputs[inputIdx].minVal
+                      + t * (mInputs[inputIdx].maxVal - mInputs[inputIdx].minVal);
+            snprintf(mSharedParamLabels[s], sizeof(mSharedParamLabels[s]),
+                     "%s=%.2f", mInputs[inputIdx].name, val);
         } else {
-            snprintf(mSharedParamLabels[i], sizeof(mSharedParamLabels[i]),
-                     "P%d=%.2f", i+1, t);
+            snprintf(mSharedParamLabels[s], sizeof(mSharedParamLabels[s]),
+                     "P%d — unassigned", s+1);
         }
     }
 }
@@ -967,16 +1081,13 @@ DWORD ISFBrowserPlugin::ProcessFrame(void* pFrame)
 
     wglMakeCurrent(mHDC, mHGLRC);
 
-    // Pick up shader selection from panel
+    // Pick up shader selection from panel (the only way to switch shaders
+    // now — PARAM_SHADER is a plain assignable slot, not a shader index).
     int req = mRequestedIdx;
     if (req >= 0 && req != mCurrentIdx) {
         mCurrentIdx       = req;
         mSharedCurrentIdx = req;  // early update — prevents WM_TIMER from syncing listbox back
         mNeedReload = true;
-        if (!mFsFiles.empty())
-            mParam[PARAM_SHADER] = (mFsFiles.size() == 1)
-                ? 0.0f
-                : (float)mCurrentIdx / (float)(mFsFiles.size() - 1);
     }
     mRequestedIdx = -1;
 
@@ -1063,32 +1174,17 @@ DWORD ISFBrowserPlugin::SetParameter(const SetParameterStruct* pParam)
 
     mParam[pn] = val;
 
-    if (pn == PARAM_SHADER && !mFsFiles.empty()) {
-        int n   = (int)mFsFiles.size();
-        int idx = (n == 1) ? 0 : (int)roundf(val * (float)(n - 1));
-        if (idx < 0) idx = 0; if (idx >= n) idx = n - 1;
-        if (idx != mCurrentIdx) { mCurrentIdx = idx; mNeedReload = true; }
-    } else if (pn >= PARAM_P1 && pn <= PARAM_P3) {
-        // Keep mAllParams in sync
-        mAllParams[pn - PARAM_P1] = val;
-    }
+    // Every slot is a plain assignable ISF-input slider now; shader
+    // switching happens only via the panel's file list (see ProcessFrame).
+    int inputIdx = mSlotToInput[pn];
+    if (inputIdx >= 0 && inputIdx < mInputCount)
+        mAllParams[inputIdx] = val;
     return FF_SUCCESS;
 }
 
 char* ISFBrowserPlugin::GetParameterDisplay(DWORD index)
 {
-    if (index == PARAM_SHADER) {
-        int n = (int)mFsFiles.size();
-        if (n == 0)
-            snprintf(mDisplayBuf, sizeof(mDisplayBuf), "no .fs files");
-        else
-            snprintf(mDisplayBuf, sizeof(mDisplayBuf), "%d/%d %s",
-                     mCurrentIdx + 1, n, mShaderLabel);
-        return mDisplayBuf;
-    }
-    int pi = (int)index - PARAM_P1;
-    if (pi >= 0 && pi < 3 && pi < (int)sizeof(mSharedParamLabels)/sizeof(mSharedParamLabels[0])) {
-        return mSharedParamLabels[pi];
-    }
+    if (index < NUM_FF_PARAMS)
+        return mSharedParamLabels[index];
     return (char*)"";
 }

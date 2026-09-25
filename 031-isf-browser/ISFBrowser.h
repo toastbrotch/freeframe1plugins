@@ -36,7 +36,12 @@ class ISFBrowserPlugin : public CFreeFramePlugin
 {
     // ---- public: accessible from free-function panel helpers ----
 public:
-    float    mParam[NUM_FF_PARAMS];          // FreeFrame protocol (Shader + P1/P2/P3)
+    // All 4 FreeFrame slots (formerly "Shader + P1/P2/P3") are now uniform,
+    // freely-assignable ISF-input sliders; shader switching moved entirely
+    // into the panel's file list. mSlotToInput[slot] holds the ISF input
+    // index bound to that Resolume slider, or -1 if the slot is unassigned.
+    float    mParam[NUM_FF_PARAMS];
+    int      mSlotToInput[NUM_FF_PARAMS];
     float    mAllParams[MAX_ALL_INPUTS];     // all ISF input values, 0-1 normalised
     ISFInput mInputs[MAX_ALL_INPUTS];
     int      mInputCount;
@@ -92,7 +97,7 @@ private:
     volatile int    mSharedCurrentIdx;
     volatile int    mSharedFileCount;
     char            mSharedFileLabels[MAX_FS_FILES][64];
-    char            mSharedParamLabels[3][80];  // for Resolume GetParameterDisplay
+    char            mSharedParamLabels[NUM_FF_PARAMS][80];  // for Resolume GetParameterDisplay
     char            mSharedShaderName[64];
 
     char     mDisplayBuf[80];
