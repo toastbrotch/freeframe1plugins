@@ -245,7 +245,14 @@ DWORD instantiate(const VideoInfoStruct* pVideoInfo)
 DWORD deInstantiate(LPVOID instanceID)
 {
 	if ((CFreeFramePlugin*)instanceID != NULL) {
-		delete instanceID;
+		// `delete instanceID` (an LPVOID/void*) is undefined behaviour: with
+		// no type information, the compiler can't call the destructor at
+		// all — it just frees the raw block. That silently skips every
+		// plugin's cleanup logic on unload (e.g. ISFBrowser's popup-window
+		// shutdown never fires). CFreeFramePlugin has a virtual destructor,
+		// so deleting through the correctly-typed pointer dispatches to the
+		// real derived destructor as intended.
+		delete (CFreeFramePlugin*)instanceID;
 		instanceID = NULL;
 		return FF_SUCCESS;
 	}
