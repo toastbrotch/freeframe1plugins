@@ -11,7 +11,7 @@
       --bg: #0e0e0e;
       --surface: #181818;
       --border: #2a2a2a;
-      --accent: #c8ff00;
+      --accent: #ed05a5;
       --text: #e0e0e0;
       --muted: #828282;
       --radius: 6px;
@@ -237,6 +237,37 @@
         border-bottom: none;
       }
     }
+
+    .group-title {
+      text-align: left;
+      font-size: 1.05rem;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.6rem;
+    }
+
+    .group-title .group-sub {
+      display: block;
+      margin-top: 0.4rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
+    .toc-group-label {
+      color: var(--muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 0.6rem;
+    }
+
+    .toc-group-label:first-child {
+      margin-top: 0;
+    }
   </style>
 </head>
 <body>
@@ -253,27 +284,147 @@
       <br /><br />Instructions: Just drop the <code>.dll</code> into your Resolume 2.41 FreeFrame folder 
       and you're good: <code>C:\Program Files (x86)\Resolume 2.41\plugins</code>
       <br /><br /><strong>Pay attention:</strong> some plugins are effects — find them in the effects menu and drop them onto a clip or a global effect slot. Others are sources (aka content generators) — find them in the source menu and drop them into a clip slot like any other clip.
+      <br /><br />Also see the newer <a href="https://github.com/toastbrotch/ffglplugins" target="_blank">FFGL plugins for modern Resolume 7.x</a> (64-bit, GPU-texture-based) — same spirit, different plugin API.
       <br /><br />Source code: <a href="https://github.com/toastbrotch/freeframe1plugins"><svg aria-hidden="true" focusable="false" class="octicon octicon-mark-github" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" display="inline-block" overflow="visible" style="vertical-align:text-bottom"><path d="M12 1C5.9225 1 1 5.9225 1 12C1 16.8675 4.14875 20.9787 8.52125 22.4362C9.07125 22.5325 9.2775 22.2025 9.2775 21.9137C9.2775 21.6525 9.26375 20.7862 9.26375 19.865C6.5 20.3737 5.785 19.1912 5.565 18.5725C5.44125 18.2562 4.905 17.28 4.4375 17.0187C4.0525 16.8125 3.5025 16.3037 4.42375 16.29C5.29 16.2762 5.90875 17.0875 6.115 17.4175C7.105 19.0812 8.68625 18.6137 9.31875 18.325C9.415 17.61 9.70375 17.1287 10.02 16.8537C7.5725 16.5787 5.015 15.63 5.015 11.4225C5.015 10.2262 5.44125 9.23625 6.1425 8.46625C6.0325 8.19125 5.6475 7.06375 6.2525 5.55125C6.2525 5.55125 7.17375 5.2625 9.2775 6.67875C10.1575 6.43125 11.0925 6.3075 12.0275 6.3075C12.9625 6.3075 13.8975 6.43125 14.7775 6.67875C16.8813 5.24875 17.8025 5.55125 17.8025 5.55125C18.4075 7.06375 18.0225 8.19125 17.9125 8.46625C18.6138 9.23625 19.04 10.2125 19.04 11.4225C19.04 15.6437 16.4688 16.5787 14.0213 16.8537C14.42 17.1975 14.7638 17.8575 14.7638 18.8887C14.7638 20.36 14.75 21.5425 14.75 21.9137C14.75 22.2025 14.9563 22.5462 15.5063 22.4362C19.8513 20.9787 23 16.8537 23 12C23 5.9225 18.0775 1 12 1Z"></path></svg></a>
     </p>
     <div class="toc-title">Plugins:</div>
     <nav class="toc">
-      <a href="#p001">001 FrameDiff</a>
-      <a href="#p002">002 ColorReduce</a>
-      <a href="#p003">003 Rings</a>
-      <a href="#p004">004 Lines</a>
-      <!-- <a href="#p005">005 LineEmitter</a>-->
-      <a href="#p006">006 GlowParticles</a>
-      <a href="#p007">007 VHSGlitch</a>
-      <a href="#p008">008 RandomCrop</a>
-      <a href="#p009">009 VHSClog</a>
+      <div class="toc-group-label">Frameworks</div>
       <a href="#p031">031 ISF Browser</a>
-      <a href="#p050">050+051+052 Buffer System</a>
       <a href="#p053">053 NDIOut</a>
       <a href="#p054">054 NDIIn</a>
+      <div class="toc-group-label">Favourites</div>
+      <a href="#p001">001 FrameDiff</a>
+      <a href="#p002">002 ColorReduce</a>
+      <a href="#p007">007 VHSGlitch</a>
+      <a href="#p009">009 VHSClog</a>
+      <div class="toc-group-label">Experiments</div>
+      <a href="#p050">050+051+052 Buffer System</a>
+      <a href="#p003">003 Rings</a>
+      <a href="#p004">004 Lines</a>
+      <a href="#p006">006 GlowParticles</a>
+      <a href="#p008">008 RandomCrop</a>
     </nav>
   </header>
 
   <div class="effects">
+
+    <div class="group-title" id="g-frameworks">Frameworks — enable new workflows<span class="group-sub">Not effects in themselves — infrastructure that lets other tools/effects do things Resolume 2.41 can’t do alone.</span></div>
+
+    <!-- 031 ISF Browser -->
+    <div class="card" id="p031">
+      <div class="card-body">
+        <div class="card-number">031</div>
+        <div class="card-title">ISF Browser v0.2</div>
+        <p class="card-desc">
+          A FreeFrame <em>source</em> that runs any ISF/GLSL shader from disk — no build
+          tools needed on the Windows side. Drop <code>ISFBrowser.dll</code> and any
+          number of <code>.fs</code> files into the same Resolume plugins folder.
+          The plugin scans the folder at startup and opens a popup panel listing every
+          shader found — click one to switch, live, with the shader's own name and a
+          preview of its parameters shown right there. Compatible with shaders from
+          <a href="https://glslop.com/">glslop.com</a> (all CC0).
+        </p>
+        <p class="card-desc">
+          Shader compilation happens on the GPU at switch time — expect a brief hitch
+          on complex shaders. All 4 of Resolume's sliders (P1–P4) are freely assignable:
+          next to every ISF input in the popup panel sit four small buttons, one per
+          Resolume slider. Click one to bind that input to that slider — it lights up
+          solid green so the connection is obvious at a glance, and binding a slider
+          elsewhere automatically frees it from wherever it was before. Each Resolume
+          slider's on-screen display shows the actual ISF input name and current value
+          of whatever it's currently bound to. Bindings default to the shader's first
+          4 inputs and reset to that default whenever you switch shaders.
+        </p>
+        <div class="card-params">
+          <span class="tag">P1–P4 : freely assignable to any of the active shader's inputs, via the popup panel</span>
+          <span class="tag">Shader switching : click a file in the popup panel's list (no longer a slider)</span>
+        </div>
+        <a class="download-btn" href="ISFBrowser.dll">Download FreeFrame Source ISFBrowser.dll</a>
+      </div>
+    </div>
+
+    <!-- 053 NDIOut -->
+    <div class="card" id="p053">
+      <div class="card-body">
+        <div class="card-number">053</div>
+        <div class="card-title">NDIOut v0.1</div>
+        <p class="card-desc">
+          A silent passthrough effect that simultaneously broadcasts the current clip/stream as an
+          NDI video source on the local network. The clip is not visually altered — NDI
+          output is a side-effect. Any NDI receiver on the same network (OBS, vMix,
+          NDI Monitor, another Resolume) will see a source named
+          <strong>Resolume 2.41</strong> and can pull it in live.
+        </p>
+        <p class="card-desc">
+          Drop it on a clip to stream that clip, on a layer effect slot to stream the
+          layer output, or on a global effect slot to stream the full mix. it is typically used as last global effect to stream the whole mix.
+        </p>
+
+        <p class="card-desc" style="font-style:italic; margin-bottom:0.5rem;">Setup — one-time install on the Windows machine:</p>
+        <ol class="card-desc" style="padding-left:1.2rem; margin-bottom:1.2rem;">
+          <li style="margin-bottom:0.5rem;">
+            Download and run the <strong>NDI 6 Tools</strong> installer from
+            <a href="https://ndi.video/tools/ndi-core-suite/" target="_blank" style="color:var(--accent);">ndi.video</a>.
+            This installs <code>Processing.NDI.Lib.x86.dll</code> and sets the
+            <code>NDI_RUNTIME_DIR_V6</code> environment variable that NDIOut uses to
+            find it at startup.
+          </li>
+        </ol>
+        <p class="card-desc" style="margin-bottom:1.2rem;">
+          If the NDI runtime is not installed, the plugin loads silently and the clip
+          passes through — Resolume will not crash.
+        </p>
+
+        <div class="card-params">
+          <span class="tag">Active — off - on</span>
+        </div>
+        <a class="download-btn" href="NDIOut.dll">Download FreeFrame Effect NDIOut.dll</a>
+      </div>
+    </div>
+
+    <!-- 054 NDIIn -->
+    <div class="card" id="p054">
+      <div class="card-body">
+        <div class="card-number">054</div>
+        <div class="card-title">NDIIn v0.1</div>
+        <p class="card-desc">
+          A FreeFrame source that receives any NDI stream on the network and
+          feeds it directly into Resolume as a video source. The Source slider
+          steps through all currently visible NDI sources; the parameter display
+          shows the name of the selected source. The source list refreshes
+          automatically every two seconds — new senders appear without any
+          interaction needed.
+        </p>
+        <p class="card-desc">
+          Works seamlessly with <strong>NDIOut</strong>: capture one clip with
+          NDIOut, receive it in another clip (or even another machine on the
+          same network) with NDIIn.
+        </p>
+        <p class="card-desc" style="font-style:italic; margin-bottom:0.5rem;">Setup — same one-time install as NDIOut:</p>
+        <ol class="card-desc" style="padding-left:1.2rem; margin-bottom:1.2rem;">
+          <li style="margin-bottom:0.5rem;">
+            Install <strong>NDI 6 Tools</strong> from
+            <a href="https://ndi.video/tools/ndi-core-suite/" target="_blank" style="color:var(--accent);">ndi.video</a>
+            to get <code>Processing.NDI.Lib.x86.dll</code> and the
+            <code>NDI_RUNTIME_DIR_V6</code> environment variable.
+          </li>
+        </ol>
+        <p class="card-desc" style="margin-bottom:1.2rem;">
+          If the NDI runtime is not installed the plugin outputs a black frame —
+          Resolume will not crash.
+        </p>
+        <div class="card-params">
+          <div class="param-row">
+            <span class="tag">Source — Selects the NDI source by position in the discovered list.</span>
+          </div>
+        </div>
+        <a class="download-btn" href="NDIIn.dll">Download FreeFrame Source NDIIn.dll</a>
+      </div>
+    </div>
+
+
+    <div class="group-title" id="g-favourites">Favourites<span class="group-sub">The ones I actually reach for and use heavily.</span></div>
 
     <!-- 001 FrameDiff -->
     <div class="card" id="p001">
@@ -328,6 +479,89 @@
         <a class="download-btn" href="ColorReduce.dll">Download FreeFrame Effect ColorReduce.dll</a>
       </div>
     </div>
+
+    <!-- 007 VHSGlitch -->
+    <div class="card" id="p007">
+      <div class="card-media">
+        <div class="placeholder">
+          <img src="007-vhsglitch.png" alt="VHSGlitch preview">
+        </div>
+        <div class="placeholder">
+          <video src="007-vhsglitch.mp4" controls loop muted playsinline></video>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-number">007</div>
+        <div class="card-title">VHSGlitch v0.1</div>
+        <p class="card-desc">
+          Stacks four classic VHS tape artefacts in one pass. All four effects are
+          independent — dial each to zero and the frame passes through clean; push them
+          together for full tape-meltdown.
+        </p>
+        <p class="card-desc">
+          <strong>Shift</strong> jitters every scan line left or right by a random amount —
+          most rows drift subtly, but 1 in 16 snaps to a large offset for the characteristic
+          VHS tape-snap look. <strong>Chroma</strong> separates the RGB channels horizontally:
+          red shifts left, blue shifts right, leaving colour fringing on every hard edge as
+          though the chroma signal arrived late. <strong>Noise</strong> turns a random
+          fraction of rows into static bands, blending them with white noise — the heavier
+          the slider, the more rows are hit and the denser the grain. <strong>Tracking</strong>
+          picks 1-4 horizontal slabs of the frame each frame and displaces them by a large
+          random amount sideways, mimicking a VHS head that can't find the tape path.
+        </p>
+        <div class="card-params">
+          <span class="tag">Shift : ±0-60 px scan-line jitter</span>
+          <span class="tag">Chroma : ±0-20 px RGB separation</span>
+          <span class="tag">Noise : 0-100% static band coverage</span>
+          <span class="tag">Tracking : 0-4 displaced blocks</span>
+        </div>
+        <a class="download-btn" href="VHSGlitch.dll">Download FreeFrame Effect VHSGlitch.dll</a>
+      </div>
+    </div>
+
+    <!-- 009 VHSClog -->
+    <div class="card" id="p009">
+      <div class="card-media">
+        <div class="placeholder">
+          <img src="009-vhsclog.png" alt="VHSClog preview">
+        </div>
+        <div class="placeholder">
+          <video src="009-vhsclog.mp4" controls loop muted playsinline></video>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-number">009</div>
+        <div class="card-title">VHSClog v0.1</div>
+        <p class="card-desc">
+          Simulates a partially clogged VHS read head. When a head clogs, the tape
+          signal drops in discrete horizontal bands: the head drags through residue instead
+          of reading cleanly, producing thick smeared slabs of frozen colour.
+          All four parameters are independent — zero them out and the frame passes through
+          untouched; push them together for a full tape-meltdown.
+        </p>
+        <p class="card-desc">
+          <strong>Clog</strong> places 1–5 horizontal signal-loss bands at random positions
+          on the frame. <strong>Thickness</strong> sets the vertical height of each smear
+          stripe: rows inside a band are grouped into slabs of 1–16 lines that all share the
+          same hold/fresh pattern, so individual streaks grow from hair-thin to chunky bars
+          without affecting the band size. <strong>Smear</strong> makes the head "drag": each
+          pixel has a growing chance to repeat its left neighbour instead of reading a fresh
+          sample. The probability tops out at 98.5%, giving an average streak of ~66 px, so
+          full Smear fills entire rows with one dragged colour. <strong>Flutter</strong>
+          controls how rapidly the band positions shift; at zero bands are nearly frozen, at
+          one they jump to new positions every frame.
+        </p>
+        <div class="card-params">
+          <span class="tag">Clog : 0-5 signal-loss bands</span>
+          <span class="tag">Thickness : 1-16 px vertical smear stripe height</span>
+          <span class="tag">Smear : 0-98.5% horizontal pixel hold (~66 px avg run at max)</span>
+          <span class="tag">Flutter : static → every-frame repositioning</span>
+        </div>
+        <a class="download-btn" href="VHSClog.dll">Download FreeFrame Effect VHSClog.dll</a>
+      </div>
+    </div>
+
+    <div class="group-title" id="g-experiments">Also included — experiments<span class="group-sub">Older or more exploratory plugins. They work, just not in heavy rotation.</span></div>
 
     <!-- 003 Rings -->
     <div class="card" id="p003">
@@ -384,41 +618,6 @@
       </div>
     </div>
 
-    <!-- 005 LineEmitter -->
-    <!--
-    <div class="card" id="p005">
-      <div class="card-media">
-        <div class="placeholder">
-          <img src="005-lineemitter.png" alt="LineEmitter preview">
-        </div>
-        <div class="placeholder">
-          <video src="005-lineemitter.mp4" controls loop muted playsinline></video>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="card-number">005</div>
-        <div class="card-title">LineEmitter v1.1</div>
-        <p class="card-desc">
-          Full-width horizontal lines that scroll across the frame. Pixels inside a line are
-          colour-inverted; gaps are left untouched. Line width and gap width are now
-          independent sliders, so you can dial in razor-thin lines with wide breathing room,
-          fat bars that nearly touch, or anything in between. Speed is bidirectional —
-          centre is stopped, right half scrolls upward, left half scrolls downward. The
-          perspective Scale slider warps the spacing logarithmically so lines appear to grow
-          or shrink as they travel, creating a vanishing-point tunnel effect.
-        </p>
-        <div class="card-params">
-          <span class="tag">NumLines : 1-50</span>
-          <span class="tag">LineWidth : 1-128 px</span>
-          <span class="tag">GapWidth : 1-128 px</span>
-          <span class="tag">Scale : 0.2x-5.0x perspective</span>
-          <span class="tag">Speed : −15 to +15 u/fr (centre = stopped)</span>
-        </div>
-        <a class="download-btn" href="LineEmitter.dll">Download FreeFrame Effect LineEmitter.dll</a>
-      </div>
-    </div>
-  -->
-
     <!-- 006 GlowParticles -->
     <div class="card" id="p006">
       <div class="card-media">
@@ -448,45 +647,6 @@
           <span class="tag">Hue : 0-360 deg</span>
         </div>
         <a class="download-btn" href="GlowParticles.dll">Download FreeFrame Effect GlowParticles.dll</a>
-      </div>
-    </div>
-
-    <!-- 007 VHSGlitch -->
-    <div class="card" id="p007">
-      <div class="card-media">
-        <div class="placeholder">
-          <img src="007-vhsglitch.png" alt="VHSGlitch preview">
-        </div>
-        <div class="placeholder">
-          <video src="007-vhsglitch.mp4" controls loop muted playsinline></video>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="card-number">007</div>
-        <div class="card-title">VHSGlitch v0.1</div>
-        <p class="card-desc">
-          Stacks four classic VHS tape artefacts in one pass. All four effects are
-          independent — dial each to zero and the frame passes through clean; push them
-          together for full tape-meltdown.
-        </p>
-        <p class="card-desc">
-          <strong>Shift</strong> jitters every scan line left or right by a random amount —
-          most rows drift subtly, but 1 in 16 snaps to a large offset for the characteristic
-          VHS tape-snap look. <strong>Chroma</strong> separates the RGB channels horizontally:
-          red shifts left, blue shifts right, leaving colour fringing on every hard edge as
-          though the chroma signal arrived late. <strong>Noise</strong> turns a random
-          fraction of rows into static bands, blending them with white noise — the heavier
-          the slider, the more rows are hit and the denser the grain. <strong>Tracking</strong>
-          picks 1-4 horizontal slabs of the frame each frame and displaces them by a large
-          random amount sideways, mimicking a VHS head that can't find the tape path.
-        </p>
-        <div class="card-params">
-          <span class="tag">Shift : ±0-60 px scan-line jitter</span>
-          <span class="tag">Chroma : ±0-20 px RGB separation</span>
-          <span class="tag">Noise : 0-100% static band coverage</span>
-          <span class="tag">Tracking : 0-4 displaced blocks</span>
-        </div>
-        <a class="download-btn" href="VHSGlitch.dll">Download FreeFrame Effect VHSGlitch.dll</a>
       </div>
     </div>
 
@@ -523,81 +683,6 @@
           <span class="tag">Softness : 0-25% gradient edge zone</span>
         </div>
         <a class="download-btn" href="RandomCrop.dll">Download FreeFrame Effect RandomCrop.dll</a>
-      </div>
-    </div>
-
-    <!-- 009 VHSClog -->
-    <div class="card" id="p009">
-      <div class="card-media">
-        <div class="placeholder">
-          <img src="009-vhsclog.png" alt="VHSClog preview">
-        </div>
-        <div class="placeholder">
-          <video src="009-vhsclog.mp4" controls loop muted playsinline></video>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="card-number">009</div>
-        <div class="card-title">VHSClog v0.1</div>
-        <p class="card-desc">
-          Simulates a partially clogged VHS read head. When a head clogs, the tape
-          signal drops in discrete horizontal bands: the head drags through residue instead
-          of reading cleanly, producing thick smeared slabs of frozen colour.
-          All four parameters are independent — zero them out and the frame passes through
-          untouched; push them together for a full tape-meltdown.
-        </p>
-        <p class="card-desc">
-          <strong>Clog</strong> places 1–5 horizontal signal-loss bands at random positions
-          on the frame. <strong>Thickness</strong> sets the vertical height of each smear
-          stripe: rows inside a band are grouped into slabs of 1–16 lines that all share the
-          same hold/fresh pattern, so individual streaks grow from hair-thin to chunky bars
-          without affecting the band size. <strong>Smear</strong> makes the head "drag": each
-          pixel has a growing chance to repeat its left neighbour instead of reading a fresh
-          sample. The probability tops out at 98.5%, giving an average streak of ~66 px, so
-          full Smear fills entire rows with one dragged colour. <strong>Flutter</strong>
-          controls how rapidly the band positions shift; at zero bands are nearly frozen, at
-          one they jump to new positions every frame.
-        </p>
-        <div class="card-params">
-          <span class="tag">Clog : 0-5 signal-loss bands</span>
-          <span class="tag">Thickness : 1-16 px vertical smear stripe height</span>
-          <span class="tag">Smear : 0-98.5% horizontal pixel hold (~66 px avg run at max)</span>
-          <span class="tag">Flutter : static → every-frame repositioning</span>
-        </div>
-        <a class="download-btn" href="VHSClog.dll">Download FreeFrame Effect VHSClog.dll</a>
-      </div>
-    </div>
-
-    <!-- 031 ISF Browser -->
-    <div class="card" id="p031">
-      <div class="card-body">
-        <div class="card-number">031</div>
-        <div class="card-title">ISF Browser v0.2</div>
-        <p class="card-desc">
-          A FreeFrame <em>source</em> that runs any ISF/GLSL shader from disk — no build
-          tools needed on the Windows side. Drop <code>ISFBrowser.dll</code> and any
-          number of <code>.fs</code> files into the same Resolume plugins folder.
-          The plugin scans the folder at startup and opens a popup panel listing every
-          shader found — click one to switch, live, with the shader's own name and a
-          preview of its parameters shown right there. Compatible with shaders from
-          <a href="https://glslop.com/">glslop.com</a> (all CC0).
-        </p>
-        <p class="card-desc">
-          Shader compilation happens on the GPU at switch time — expect a brief hitch
-          on complex shaders. All 4 of Resolume's sliders (P1–P4) are freely assignable:
-          next to every ISF input in the popup panel sit four small buttons, one per
-          Resolume slider. Click one to bind that input to that slider — it lights up
-          solid green so the connection is obvious at a glance, and binding a slider
-          elsewhere automatically frees it from wherever it was before. Each Resolume
-          slider's on-screen display shows the actual ISF input name and current value
-          of whatever it's currently bound to. Bindings default to the shader's first
-          4 inputs and reset to that default whenever you switch shaders.
-        </p>
-        <div class="card-params">
-          <span class="tag">P1–P4 : freely assignable to any of the active shader's inputs, via the popup panel</span>
-          <span class="tag">Shader switching : click a file in the popup panel's list (no longer a slider)</span>
-        </div>
-        <a class="download-btn" href="ISFBrowser.dll">Download FreeFrame Source ISFBrowser.dll</a>
       </div>
     </div>
 
@@ -696,86 +781,42 @@
       </div>
     </div>
 
-    <!-- 053 NDIOut -->
-    <div class="card" id="p053">
-      <div class="card-body">
-        <div class="card-number">053</div>
-        <div class="card-title">NDIOut v0.1</div>
-        <p class="card-desc">
-          A silent passthrough effect that simultaneously broadcasts the current clip/stream as an
-          NDI video source on the local network. The clip is not visually altered — NDI
-          output is a side-effect. Any NDI receiver on the same network (OBS, vMix,
-          NDI Monitor, another Resolume) will see a source named
-          <strong>Resolume 2.41</strong> and can pull it in live.
-        </p>
-        <p class="card-desc">
-          Drop it on a clip to stream that clip, on a layer effect slot to stream the
-          layer output, or on a global effect slot to stream the full mix. it is typically used as last global effect to stream the whole mix.
-        </p>
-
-        <p class="card-desc" style="font-style:italic; margin-bottom:0.5rem;">Setup — one-time install on the Windows machine:</p>
-        <ol class="card-desc" style="padding-left:1.2rem; margin-bottom:1.2rem;">
-          <li style="margin-bottom:0.5rem;">
-            Download and run the <strong>NDI 6 Tools</strong> installer from
-            <a href="https://ndi.video/tools/ndi-core-suite/" target="_blank" style="color:var(--accent);">ndi.video</a>.
-            This installs <code>Processing.NDI.Lib.x86.dll</code> and sets the
-            <code>NDI_RUNTIME_DIR_V6</code> environment variable that NDIOut uses to
-            find it at startup.
-          </li>
-        </ol>
-        <p class="card-desc" style="margin-bottom:1.2rem;">
-          If the NDI runtime is not installed, the plugin loads silently and the clip
-          passes through — Resolume will not crash.
-        </p>
-
-        <div class="card-params">
-          <span class="tag">Active — off - on</span>
+    <!-- 005 LineEmitter -->
+    <!--
+    <div class="card" id="p005">
+      <div class="card-media">
+        <div class="placeholder">
+          <img src="005-lineemitter.png" alt="LineEmitter preview">
         </div>
-        <a class="download-btn" href="NDIOut.dll">Download FreeFrame Effect NDIOut.dll</a>
+        <div class="placeholder">
+          <video src="005-lineemitter.mp4" controls loop muted playsinline></video>
+        </div>
       </div>
-    </div>
-
-    <!-- 054 NDIIn -->
-    <div class="card" id="p054">
       <div class="card-body">
-        <div class="card-number">054</div>
-        <div class="card-title">NDIIn v0.1</div>
+        <div class="card-number">005</div>
+        <div class="card-title">LineEmitter v1.1</div>
         <p class="card-desc">
-          A FreeFrame source that receives any NDI stream on the network and
-          feeds it directly into Resolume as a video source. The Source slider
-          steps through all currently visible NDI sources; the parameter display
-          shows the name of the selected source. The source list refreshes
-          automatically every two seconds — new senders appear without any
-          interaction needed.
-        </p>
-        <p class="card-desc">
-          Works seamlessly with <strong>NDIOut</strong>: capture one clip with
-          NDIOut, receive it in another clip (or even another machine on the
-          same network) with NDIIn.
-        </p>
-        <p class="card-desc" style="font-style:italic; margin-bottom:0.5rem;">Setup — same one-time install as NDIOut:</p>
-        <ol class="card-desc" style="padding-left:1.2rem; margin-bottom:1.2rem;">
-          <li style="margin-bottom:0.5rem;">
-            Install <strong>NDI 6 Tools</strong> from
-            <a href="https://ndi.video/tools/ndi-core-suite/" target="_blank" style="color:var(--accent);">ndi.video</a>
-            to get <code>Processing.NDI.Lib.x86.dll</code> and the
-            <code>NDI_RUNTIME_DIR_V6</code> environment variable.
-          </li>
-        </ol>
-        <p class="card-desc" style="margin-bottom:1.2rem;">
-          If the NDI runtime is not installed the plugin outputs a black frame —
-          Resolume will not crash.
+          Full-width horizontal lines that scroll across the frame. Pixels inside a line are
+          colour-inverted; gaps are left untouched. Line width and gap width are now
+          independent sliders, so you can dial in razor-thin lines with wide breathing room,
+          fat bars that nearly touch, or anything in between. Speed is bidirectional —
+          centre is stopped, right half scrolls upward, left half scrolls downward. The
+          perspective Scale slider warps the spacing logarithmically so lines appear to grow
+          or shrink as they travel, creating a vanishing-point tunnel effect.
         </p>
         <div class="card-params">
-          <div class="param-row">
-            <span class="tag">Source — Selects the NDI source by position in the discovered list.</span>
-          </div>
+          <span class="tag">NumLines : 1-50</span>
+          <span class="tag">LineWidth : 1-128 px</span>
+          <span class="tag">GapWidth : 1-128 px</span>
+          <span class="tag">Scale : 0.2x-5.0x perspective</span>
+          <span class="tag">Speed : −15 to +15 u/fr (centre = stopped)</span>
         </div>
-        <a class="download-btn" href="NDIIn.dll">Download FreeFrame Source NDIIn.dll</a>
+        <a class="download-btn" href="LineEmitter.dll">Download FreeFrame Effect LineEmitter.dll</a>
       </div>
     </div>
+  -->
 
-  </div>
+    </div>
 
   <footer>
     FreeFrame 1.0 &mdash; built with MinGW i686 on Linux &mdash; tested in Resolume 2.41 on Windows 11 &mdash; made with Claude

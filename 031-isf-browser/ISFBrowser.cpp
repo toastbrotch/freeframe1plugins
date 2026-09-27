@@ -89,8 +89,8 @@ static volatile LONG s_isfInstanceCounter = 0;
 
 #define CLR_BG        RGB(14,  14,  14)
 #define CLR_LIST_BG   RGB( 6,   6,   6)
-#define CLR_TEXT      RGB(140, 210, 140)
-#define CLR_DIM       RGB( 80, 130,  80)
+#define CLR_TEXT      RGB(237,   5, 165)  // old-Resolume magenta (#ed05a5), was greenish
+#define CLR_DIM       RGB(142,   3,  99)  // ~60% of CLR_TEXT, same ratio the old dim green used
 
 // ------------------------------------------------------------------
 // CreateInstance
@@ -314,10 +314,10 @@ static void assignSlot(ISFBrowserPlugin* self, int i, int slot)
 LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
                                                   WPARAM wp, LPARAM lp)
 {
-    static HBRUSH hBrBg    = NULL;
-    static HBRUSH hBrList  = NULL;
-    static HBRUSH hBrGreen = NULL;  // active slot-button fill
-    static HFONT  hFont    = NULL;
+    static HBRUSH hBrBg     = NULL;
+    static HBRUSH hBrList   = NULL;
+    static HBRUSH hBrAccent = NULL;  // active slot-button fill (CLR_TEXT)
+    static HFONT  hFont     = NULL;
 
     ISFBrowserPlugin* self =
         (ISFBrowserPlugin*)GetWindowLongA(hwnd, GWL_USERDATA);
@@ -328,10 +328,10 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
         self = (ISFBrowserPlugin*)((CREATESTRUCTA*)lp)->lpCreateParams;
         SetWindowLongA(hwnd, GWL_USERDATA, (LONG)(LONG_PTR)self);
 
-        if (!hBrBg)    hBrBg    = CreateSolidBrush(CLR_BG);
-        if (!hBrList)  hBrList  = CreateSolidBrush(CLR_LIST_BG);
-        if (!hBrGreen) hBrGreen = CreateSolidBrush(CLR_TEXT);
-        if (!hFont)    hFont    = CreateFontA(14, 0, 0, 0, FW_NORMAL,
+        if (!hBrBg)     hBrBg     = CreateSolidBrush(CLR_BG);
+        if (!hBrList)   hBrList   = CreateSolidBrush(CLR_LIST_BG);
+        if (!hBrAccent) hBrAccent = CreateSolidBrush(CLR_TEXT);
+        if (!hFont)     hFont     = CreateFontA(14, 0, 0, 0, FW_NORMAL,
                                     FALSE, FALSE, FALSE,
                                     DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
                                     CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
@@ -542,7 +542,7 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
         int s   = rel % NUM_FF_PARAMS;
         bool active = (slotForInput(self, i) == s);
 
-        FillRect(dis->hDC, &dis->rcItem, active ? hBrGreen : hBrList);
+        FillRect(dis->hDC, &dis->rcItem, active ? hBrAccent : hBrList);
         DrawEdge(dis->hDC, &dis->rcItem, active ? EDGE_SUNKEN : EDGE_RAISED, BF_RECT);
 
         char cap[4];
