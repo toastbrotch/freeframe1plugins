@@ -91,6 +91,7 @@ static volatile LONG s_isfInstanceCounter = 0;
 #define CLR_LIST_BG   RGB( 6,   6,   6)
 #define CLR_TEXT      RGB(237,   5, 165)  // old-Resolume magenta (#ed05a5), was greenish
 #define CLR_DIM       RGB(142,   3,  99)  // ~60% of CLR_TEXT, same ratio the old dim green used
+#define CLR_LABEL     RGB(200, 200, 200)  // light grey: list + labels (accent kept for buttons/shader name)
 
 // ------------------------------------------------------------------
 // CreateInstance
@@ -309,6 +310,44 @@ static void assignSlot(ISFBrowserPlugin* self, int i, int slot)
 }
 
 // ------------------------------------------------------------------
+// Panel — DPI / frame helpers
+// ------------------------------------------------------------------
+// Resolume 2.41 is not DPI-aware, so Windows bitmap-stretches its windows
+// (a 300px panel shows up 375px wide at 125% scaling). Opting just the panel
+// thread into per-monitor awareness makes its pixel sizes real screen pixels.
+// Loaded dynamically: SetThreadDpiAwarenessContext needs Windows 10 1607+.
+#define PANEL_VISIBLE_W 300
+
+static void makeThreadDpiAware()
+{
+    typedef HANDLE (WINAPI *SetCtxFn)(HANDLE);
+    HMODULE u32 = GetModuleHandleA("user32.dll");
+    SetCtxFn fn = u32 ? (SetCtxFn)GetProcAddress(u32, "SetThreadDpiAwarenessContext") : NULL;
+    if (!fn) return;
+    if (!fn((HANDLE)(LONG_PTR)-4))   // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+        fn((HANDLE)(LONG_PTR)-3);    // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE
+}
+
+// Width of the invisible resize borders: GetWindowRect minus the visible
+// frame reported by DWM (DWMWA_EXTENDED_FRAME_BOUNDS). 0 if DWM unavailable.
+static int invisibleFrameW(HWND hwnd, const RECT& wr)
+{
+    typedef HRESULT (WINAPI *DwmGetAttrFn)(HWND, DWORD, PVOID, DWORD);
+    static DwmGetAttrFn fn = NULL;
+    static bool tried = false;
+    if (!tried) {
+        tried = true;
+        HMODULE dwm = LoadLibraryA("dwmapi.dll");
+        if (dwm) fn = (DwmGetAttrFn)GetProcAddress(dwm, "DwmGetWindowAttribute");
+    }
+    RECT vis;
+    if (!fn || fn(hwnd, 9 /* DWMWA_EXTENDED_FRAME_BOUNDS */, &vis, sizeof(vis)) != S_OK)
+        return 0;
+    int d = (wr.right - wr.left) - (vis.right - vis.left);
+    return d > 0 ? d : 0;
+}
+
+// ------------------------------------------------------------------
 // Panel — window procedure
 // ------------------------------------------------------------------
 LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
@@ -340,7 +379,7 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
         // File listbox
         HWND lb = CreateWindowExA(WS_EX_CLIENTEDGE, "LISTBOX", NULL,
             WS_CHILD | WS_VISIBLE | WS_VSCROLL | LBS_NOTIFY | LBS_NOINTEGRALHEIGHT,
-            8, 8, 286, 160, hwnd, (HMENU)IDC_LISTBOX, NULL, NULL);
+            8, 8, 284, 240, hwnd, (HMENU)IDC_LISTBOX, NULL, NULL);
         SendMessageA(lb, WM_SETFONT, (WPARAM)hFont, FALSE);
 
         int fc = self->mSharedFileCount;
@@ -353,7 +392,7 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
         // Shader name label
         HWND ln = CreateWindowExA(0, "STATIC", self->mSharedShaderName,
             WS_CHILD | WS_VISIBLE | SS_LEFT,
-            8, 176, 286, 16, hwnd, (HMENU)IDC_LBL_NAME, NULL, NULL);
+            8, 256, 284, 16, hwnd, (HMENU)IDC_LBL_NAME, NULL, NULL);
         SendMessageA(ln, WM_SETFONT, (WPARAM)hFont, FALSE);
 
         // Pre-create MAX_ALL_INPUTS label+trackbar rows, each with 4 slot
@@ -363,7 +402,7 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
             buildParamLabel(buf, sizeof(buf), self, i);
             HWND lbl = CreateWindowExA(0, "STATIC", buf,
                 WS_CHILD | SS_LEFT,   // not WS_VISIBLE yet
-                8, 0, 176, 15,
+                8, 0, 174, 15,
                 hwnd, (HMENU)(UINT_PTR)(IDC_LBL_P0 + i), NULL, NULL);
             SendMessageA(lbl, WM_SETFONT, (WPARAM)hFont, FALSE);
 
@@ -376,14 +415,14 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
                 char cap[4]; snprintf(cap, sizeof(cap), "%d", s + 1);
                 HWND sb = CreateWindowExA(0, "BUTTON", cap,
                     WS_CHILD | BS_OWNERDRAW,   // not WS_VISIBLE yet
-                    190 + s*26, 0, 24, 18,
+                    188 + s*26, 0, 24, 18,
                     hwnd, (HMENU)(UINT_PTR)slotBtnId(i, s), NULL, NULL);
                 SendMessageA(sb, WM_SETFONT, (WPARAM)hFont, FALSE);
             }
 
             HWND trk = CreateWindowExA(0, TRACKBAR_CLASSA, NULL,
                 WS_CHILD | TBS_HORZ | TBS_NOTICKS,   // not WS_VISIBLE yet
-                8, 0, 286, 22,
+                8, 0, 284, 22,
                 hwnd, (HMENU)(UINT_PTR)(IDC_TRACK_P0 + i), NULL, NULL);
             SendMessageA(trk, TBM_SETRANGE, FALSE, MAKELPARAM(0, TRACK_RANGE));
             int pos = (int)(self->mAllParams[i] * TRACK_RANGE + 0.5f);
@@ -405,10 +444,11 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
             for (int i = 0; i < fc; ++i)
                 SendMessageA(lb, LB_ADDSTRING, 0,
                              (LPARAM)self->mSharedFileLabels[i]);
+            self->mPanelSeenIdx = -1;   // selection was lost, re-apply below
         }
 
-        // Pick up a user listbox click: read lb.cursel here (150 ms later)
-        // so the selection is fully committed before we sample it.
+        // Safety net for a user click: LBN_SELCHANGE already requested the
+        // shader; re-read lb.cursel here in case it wasn't committed yet.
         if (self->mUserClicked) {
             int lbSel = (int)SendMessageA(lb, LB_GETCURSEL, 0, 0);
             if (lbSel != LB_ERR && lbSel >= 0 && lbSel != self->mSharedCurrentIdx)
@@ -416,11 +456,16 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
             self->mUserClicked = false;
         }
 
-        // Sync listbox to current shader when no user interaction is pending
-        // (handles Resolume-slider-driven changes and initial selection).
-        if (self->mRequestedIdx < 0) {
-            int ci = self->mSharedCurrentIdx;
-            if ((int)SendMessageA(lb, LB_GETCURSEL, 0, 0) != ci && ci >= 0)
+        // UI first: the listbox selection belongs to the user. Only follow
+        // the loaded shader when it actually changes (initial load, rebuild),
+        // never just because the render thread hasn't picked up a click yet,
+        // and never mid-click (the listbox selects on mouse-down but only
+        // sends LBN_SELCHANGE on mouse-up; syncing in between reverted it).
+        int ci = self->mSharedCurrentIdx;
+        if (ci != self->mPanelSeenIdx && GetKeyState(VK_LBUTTON) >= 0) {
+            self->mPanelSeenIdx = ci;
+            if (self->mRequestedIdx < 0 && ci >= 0 &&
+                (int)SendMessageA(lb, LB_GETCURSEL, 0, 0) != ci)
                 SendMessageA(lb, LB_SETCURSEL, (WPARAM)ci, 0);
         }
 
@@ -430,17 +475,36 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
         int ic = self->mInputCount;
 
         if (ic != self->mPanelLastIC) {
-            // Compute positions and show/hide
-            int y = 198;
+            // Resize window to fit: PANEL_VISIBLE_W wide as seen on screen,
+            // i.e. excluding the invisible resize borders Windows 10+ adds
+            // around WS_SIZEBOX windows (DWM extended frame bounds).
+            int clientH = (ic > 0) ? (278 + ic * 44 + 10) : 290;
+            RECT cr; GetClientRect(hwnd, &cr);
+            RECT wr; GetWindowRect(hwnd, &wr);
+            int chromaH = (wr.bottom - wr.top) - (cr.bottom - cr.top);
+            int outerW  = PANEL_VISIBLE_W + invisibleFrameW(hwnd, wr);
+            SetWindowPos(hwnd, NULL, 0, 0,
+                         outerW, clientH + chromaH,
+                         SWP_NOMOVE | SWP_NOZORDER);
+
+            // Lay out controls against the resulting client width
+            GetClientRect(hwnd, &cr);
+            int cw   = cr.right - cr.left;
+            int full = cw - 16;          // 8px margin each side
+            int btnX = cw - 112;         // 4 slot buttons, right-aligned
+            SetWindowPos(GetDlgItem(hwnd, IDC_LISTBOX),  NULL, 8, 8,   full, 240, SWP_NOZORDER);
+            SetWindowPos(GetDlgItem(hwnd, IDC_LBL_NAME), NULL, 8, 256, full, 16,  SWP_NOZORDER);
+
+            int y = 278;
             for (int i = 0; i < MAX_ALL_INPUTS; ++i) {
                 HWND lbl = GetDlgItem(hwnd, IDC_LBL_P0   + i);
                 HWND trk = GetDlgItem(hwnd, IDC_TRACK_P0 + i);
                 if (i < ic) {
-                    SetWindowPos(lbl, NULL, 8, y,      176, 15, SWP_NOZORDER);
+                    SetWindowPos(lbl, NULL, 8, y,      btnX - 14, 15, SWP_NOZORDER);
                     for (int s = 0; s < NUM_FF_PARAMS; ++s)
                         SetWindowPos(GetDlgItem(hwnd, slotBtnId(i, s)), NULL,
-                                     190 + s*26, y - 1, 24, 18, SWP_NOZORDER);
-                    SetWindowPos(trk, NULL, 8, y + 17, 286, 22, SWP_NOZORDER);
+                                     btnX + s*26, y - 1, 24, 18, SWP_NOZORDER);
+                    SetWindowPos(trk, NULL, 8, y + 17, full, 22, SWP_NOZORDER);
                     ShowWindow(lbl, SW_SHOW);
                     for (int s = 0; s < NUM_FF_PARAMS; ++s)
                         ShowWindow(GetDlgItem(hwnd, slotBtnId(i, s)), SW_SHOW);
@@ -454,15 +518,6 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
                 }
             }
 
-            // Resize window to fit
-            int clientH = (ic > 0) ? (198 + ic * 44 + 10) : 210;
-            RECT cr; GetClientRect(hwnd, &cr);
-            RECT wr; GetWindowRect(hwnd, &wr);
-            int chromaH = (wr.bottom - wr.top) - (cr.bottom - cr.top);
-            int chromaW = (wr.right  - wr.left) - (cr.right  - cr.left);
-            SetWindowPos(hwnd, NULL, 0, 0,
-                         302 + chromaW, clientH + chromaH,
-                         SWP_NOMOVE | SWP_NOZORDER);
             self->mPanelLastIC = ic;
         }
 
@@ -498,9 +553,11 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
 
     case WM_COMMAND:
         if (LOWORD(wp) == IDC_LISTBOX && HIWORD(wp) == LBN_SELCHANGE && self) {
-            // LBN_SELCHANGE can fire *before* the listbox commits the new
-            // selection internally, so LB_GETCURSEL here may return the OLD
-            // index.  Set a flag; WM_TIMER reads lb.cursel once it's settled.
+            // Request the shader right away; WM_TIMER re-reads lb.cursel
+            // once more (mUserClicked) in case it wasn't committed yet.
+            int sel = (int)SendMessageA((HWND)lp, LB_GETCURSEL, 0, 0);
+            if (sel >= 0 && sel != self->mSharedCurrentIdx)
+                self->mRequestedIdx = sel;
             self->mUserClicked = true;
         } else if (self && HIWORD(wp) == BN_CLICKED &&
                    LOWORD(wp) >= IDC_BTN_SLOT0 &&
@@ -548,7 +605,7 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
         char cap[4];
         GetWindowTextA(dis->hwndItem, cap, sizeof(cap));
         SetBkMode(dis->hDC, TRANSPARENT);
-        SetTextColor(dis->hDC, active ? RGB(255, 255, 255) : CLR_DIM);
+        SetTextColor(dis->hDC, active ? CLR_LABEL : CLR_DIM);
         RECT r = dis->rcItem;
         DrawTextA(dis->hDC, cap, -1, &r, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
         return TRUE;
@@ -556,14 +613,15 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
 
     case WM_CTLCOLORLISTBOX: {
         HDC hdc = (HDC)wp;
-        SetTextColor(hdc, CLR_TEXT);
+        SetTextColor(hdc, CLR_LABEL);
         SetBkColor(hdc, CLR_LIST_BG);
         return (LRESULT)hBrList;
     }
 
     case WM_CTLCOLORSTATIC: {
         HDC hdc = (HDC)wp;
-        SetTextColor(hdc, CLR_TEXT);
+        bool isName = (GetDlgCtrlID((HWND)lp) == IDC_LBL_NAME);
+        SetTextColor(hdc, isName ? CLR_TEXT : CLR_LABEL);
         SetBkColor(hdc, CLR_BG);
         return (LRESULT)hBrBg;
     }
@@ -594,6 +652,7 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
         if (self) {
             self->mPanelHWND   = NULL;   // ensure cleared (may already be)
             self->mPanelLastIC = -1;     // force layout refresh on next spawn
+            self->mPanelSeenIdx = -1;
             // mPanelSpawned is intentionally NOT cleared here.  WM_APP owns
             // that when the destructor fires; WM_CLOSE keeps it true so
             // ProcessFrame does not respawn after an intentional close.
@@ -611,6 +670,7 @@ DWORD WINAPI ISFBrowserPlugin::panelThreadProc(LPVOID param)
 {
     ISFBrowserPlugin* self = (ISFBrowserPlugin*)param;
 
+    makeThreadDpiAware();
     InitCommonControls();
 
     WNDCLASSEXA wc = {};
@@ -626,7 +686,7 @@ DWORD WINAPI ISFBrowserPlugin::panelThreadProc(LPVOID param)
         WS_EX_TOPMOST | WS_EX_TOOLWINDOW,
         "ISFBrowPanel", "ISF Browser",
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX,
-        40, 40, 318, 250,
+        40, 40, 316, 330,
         NULL, NULL, GetModuleHandleA(NULL), self);
 
     if (!hwnd) return 1;
@@ -654,7 +714,7 @@ ISFBrowserPlugin::ISFBrowserPlugin()
     , mLocTIME(-1), mLocRENDERSIZE(-1), mLocTIMEDELTA(-1), mLocFRAMEINDEX(-1)
     , mLocInstanceSeed(-1), mInstanceSeed(0.0f)
     , mRowBuf(NULL), mTime(0.0f), mFrameIdx(0), mGLReady(false)
-    , mPanelThread(NULL), mPanelHWND(NULL), mPanelSpawned(false), mPanelLastIC(-1)
+    , mPanelThread(NULL), mPanelHWND(NULL), mPanelSpawned(false), mPanelLastIC(-1), mPanelSeenIdx(-1)
     , mRequestedIdx(-1), mUserClicked(false)
     , mSharedCurrentIdx(-1), mSharedFileCount(0)
 {
@@ -936,6 +996,13 @@ bool ISFBrowserPlugin::loadShader(int idx)
         preamble += mExtra[i].name;
         preamble += ";\n";
     }
+    // Standard ISF image-access macros (image inputs are plain sampler2Ds here)
+    preamble +=
+        "#define IMG_NORM_PIXEL(img, uv)   texture2D(img, uv)\n"
+        "#define IMG_PIXEL(img, px)        texture2D(img, (px) / RENDERSIZE)\n"
+        "#define IMG_THIS_NORM_PIXEL(img)  texture2D(img, isf_FragNormCoord)\n"
+        "#define IMG_THIS_PIXEL(img)       texture2D(img, isf_FragNormCoord)\n"
+        "#define IMG_SIZE(img)             RENDERSIZE\n";
 
     const char* vsSrc =
         "#version 120\n"
@@ -1075,6 +1142,7 @@ DWORD ISFBrowserPlugin::ProcessFrame(void* pFrame)
                      ((HWND)mPanelHWND != NULL && !IsWindow((HWND)mPanelHWND));
     if (panelGone && !mPanelThread) {
         mPanelLastIC = -1;
+        mPanelSeenIdx = -1;
         spawnPanel();
         mPanelSpawned = true;
     }
@@ -1083,13 +1151,13 @@ DWORD ISFBrowserPlugin::ProcessFrame(void* pFrame)
 
     // Pick up shader selection from panel (the only way to switch shaders
     // now — PARAM_SHADER is a plain assignable slot, not a shader index).
-    int req = mRequestedIdx;
+    // Atomic take: a click landing between read and reset must not be lost
+    int req = (int)InterlockedExchange((volatile LONG*)&mRequestedIdx, -1);
     if (req >= 0 && req != mCurrentIdx) {
         mCurrentIdx       = req;
         mSharedCurrentIdx = req;  // early update — prevents WM_TIMER from syncing listbox back
         mNeedReload = true;
     }
-    mRequestedIdx = -1;
 
     if (mNeedReload) {
         loadShader(mCurrentIdx);

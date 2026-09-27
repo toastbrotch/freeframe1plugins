@@ -93,10 +93,11 @@ private:
     volatile HWND   mPanelHWND;
     bool            mPanelSpawned;
     int             mPanelLastIC;   // tracks last shown input count per instance
+    int             mPanelSeenIdx;  // last mSharedCurrentIdx the listbox followed
 
     // Dialog → plugin
     volatile int    mRequestedIdx;
-    volatile bool   mUserClicked;   // set by LBN_SELCHANGE; timer reads lb.cursel once committed
+    volatile bool   mUserClicked;   // set by LBN_SELCHANGE; timer re-reads lb.cursel as a safety net
 
     // Plugin → dialog
     volatile int    mSharedCurrentIdx;
