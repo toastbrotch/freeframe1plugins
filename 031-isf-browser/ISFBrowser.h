@@ -13,7 +13,7 @@
 #define PARAM_P3          3
 #define NUM_FF_PARAMS     4   // fixed FreeFrame interface
 
-#define MAX_ALL_INPUTS    20  // max ISF inputs we parse + expose in panel — parseISFInputs
+#define MAX_ALL_INPUTS    32  // max ISF inputs we parse + expose in panel — parseISFInputs
                                // bounds-checks against this silently (no error), so a shader
                                // with more INPUTS than this just has its tail dropped: any
                                // uniform past the cap is unset in the preamble, which fails

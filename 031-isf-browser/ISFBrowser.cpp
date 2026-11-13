@@ -73,12 +73,14 @@ static PFNGLDELETEFRAMEBUFFERSEXTPROC  glDeleteFramebuffersEXT_ = NULL;
 // ------------------------------------------------------------------
 #define IDC_LISTBOX    101
 #define IDC_LBL_NAME   110
-#define IDC_LBL_P0     120   // IDC_LBL_P0 + i  (i = 0..MAX_ALL_INPUTS-1)
-#define IDC_TRACK_P0   140   // IDC_TRACK_P0 + i
+// Each block needs room for MAX_ALL_INPUTS ids (and the slot buttons for
+// MAX_ALL_INPUTS*NUM_FF_PARAMS), so the blocks must not overlap: 200.., 300.., 400..527.
+#define IDC_LBL_P0     200   // IDC_LBL_P0 + i  (i = 0..MAX_ALL_INPUTS-1)
+#define IDC_TRACK_P0   300   // IDC_TRACK_P0 + i
 // One BS_AUTORADIOBUTTON|BS_PUSHLIKE per (input row, slot) pair, so the
 // currently-bound slot renders visibly pressed/highlighted. Row i's 4
 // buttons are IDC_BTN_SLOT0 + i*NUM_FF_PARAMS + s (s = 0..NUM_FF_PARAMS-1).
-#define IDC_BTN_SLOT0  160
+#define IDC_BTN_SLOT0  400
 
 #define TRACK_RANGE    1000
 
@@ -317,6 +319,8 @@ static void assignSlot(ISFBrowserPlugin* self, int i, int slot)
 // thread into per-monitor awareness makes its pixel sizes real screen pixels.
 // Loaded dynamically: SetThreadDpiAwarenessContext needs Windows 10 1607+.
 #define PANEL_VISIBLE_W 300
+#define PANEL_ONE_COLUMN_MAX 16   // more inputs than this -> two columns of rows, so the
+                                  // panel stays shorter than a screen with up to MAX_ALL_INPUTS
 
 static void makeThreadDpiAware()
 {
@@ -475,14 +479,22 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
         int ic = self->mInputCount;
 
         if (ic != self->mPanelLastIC) {
-            // Resize window to fit: PANEL_VISIBLE_W wide as seen on screen,
-            // i.e. excluding the invisible resize borders Windows 10+ adds
-            // around WS_SIZEBOX windows (DWM extended frame bounds).
-            int clientH = (ic > 0) ? (278 + ic * 44 + 10) : 290;
+            // Resize window to fit: PANEL_VISIBLE_W wide per column as seen on
+            // screen, i.e. excluding the invisible resize borders Windows 10+
+            // adds around WS_SIZEBOX windows (DWM extended frame bounds).
+            // Past PANEL_ONE_COLUMN_MAX inputs the rows go into two columns
+            // (filled top-to-bottom, then the second column) and the file list
+            // gets shorter, so 32 inputs still fit on a 1080p screen.
+            int cols    = (ic > PANEL_ONE_COLUMN_MAX) ? 2 : 1;
+            int rows    = (ic + cols - 1) / cols;
+            int listH   = (cols == 2) ? 160 : 240;
+            int nameY   = 8 + listH + 8;
+            int top     = nameY + 22;
+            int clientH = (ic > 0) ? (top + rows * 44 + 10) : 290;
             RECT cr; GetClientRect(hwnd, &cr);
             RECT wr; GetWindowRect(hwnd, &wr);
             int chromaH = (wr.bottom - wr.top) - (cr.bottom - cr.top);
-            int outerW  = PANEL_VISIBLE_W + invisibleFrameW(hwnd, wr);
+            int outerW  = cols * PANEL_VISIBLE_W - (cols - 1) * 8 + invisibleFrameW(hwnd, wr);
             SetWindowPos(hwnd, NULL, 0, 0,
                          outerW, clientH + chromaH,
                          SWP_NOMOVE | SWP_NOZORDER);
@@ -491,25 +503,26 @@ LRESULT CALLBACK ISFBrowserPlugin::panelWndProc(HWND hwnd, UINT msg,
             GetClientRect(hwnd, &cr);
             int cw   = cr.right - cr.left;
             int full = cw - 16;          // 8px margin each side
-            int btnX = cw - 112;         // 4 slot buttons, right-aligned
-            SetWindowPos(GetDlgItem(hwnd, IDC_LISTBOX),  NULL, 8, 8,   full, 240, SWP_NOZORDER);
-            SetWindowPos(GetDlgItem(hwnd, IDC_LBL_NAME), NULL, 8, 256, full, 16,  SWP_NOZORDER);
+            int colW = (cw - 8 * (cols + 1)) / cols;
+            SetWindowPos(GetDlgItem(hwnd, IDC_LISTBOX),  NULL, 8, 8,     full, listH, SWP_NOZORDER);
+            SetWindowPos(GetDlgItem(hwnd, IDC_LBL_NAME), NULL, 8, nameY, full, 16,    SWP_NOZORDER);
 
-            int y = 278;
             for (int i = 0; i < MAX_ALL_INPUTS; ++i) {
                 HWND lbl = GetDlgItem(hwnd, IDC_LBL_P0   + i);
                 HWND trk = GetDlgItem(hwnd, IDC_TRACK_P0 + i);
                 if (i < ic) {
-                    SetWindowPos(lbl, NULL, 8, y,      btnX - 14, 15, SWP_NOZORDER);
+                    int x    = 8 + (i / rows) * (colW + 8);
+                    int y    = top + (i % rows) * 44;
+                    int btnX = x + colW - 104;   // 4 slot buttons, right-aligned in the column
+                    SetWindowPos(lbl, NULL, x, y,      btnX - x - 6, 15, SWP_NOZORDER);
                     for (int s = 0; s < NUM_FF_PARAMS; ++s)
                         SetWindowPos(GetDlgItem(hwnd, slotBtnId(i, s)), NULL,
                                      btnX + s*26, y - 1, 24, 18, SWP_NOZORDER);
-                    SetWindowPos(trk, NULL, 8, y + 17, full, 22, SWP_NOZORDER);
+                    SetWindowPos(trk, NULL, x, y + 17, colW, 22, SWP_NOZORDER);
                     ShowWindow(lbl, SW_SHOW);
                     for (int s = 0; s < NUM_FF_PARAMS; ++s)
                         ShowWindow(GetDlgItem(hwnd, slotBtnId(i, s)), SW_SHOW);
                     ShowWindow(trk, SW_SHOW);
-                    y += 44;
                 } else {
                     ShowWindow(lbl, SW_HIDE);
                     for (int s = 0; s < NUM_FF_PARAMS; ++s)

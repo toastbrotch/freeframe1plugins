@@ -125,6 +125,20 @@
       margin-bottom: 1.2rem;
     }
 
+    .card-versions {
+      list-style: none;
+      padding: 0;
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1.2rem;
+    }
+
+    .card-versions b {
+      color: #aaa;
+      font-weight: normal;
+    }
+
     .card-params {
       display: flex;
       flex-direction: column;
@@ -291,6 +305,7 @@
     <nav class="toc">
       <div class="toc-group-label">Frameworks</div>
       <a href="#p031">031 ISF Browser</a>
+      <a href="#p032">032 ISF Effect</a>
       <a href="#p053">053 NDIOut</a>
       <a href="#p054">054 NDIIn</a>
       <div class="toc-group-label">Favourites</div>
@@ -315,7 +330,7 @@
     <div class="card" id="p031">
       <div class="card-body">
         <div class="card-number">031</div>
-        <div class="card-title">ISF Browser v0.2</div>
+        <div class="card-title">ISF Browser v0.3</div>
         <p class="card-desc">
           A FreeFrame <em>source</em> that runs any ISF/GLSL shader from disk — no build
           tools needed on the Windows side. Drop <code>ISFBrowser.dll</code> and any
@@ -336,11 +351,48 @@
           of whatever it's currently bound to. Bindings default to the shader's first
           4 inputs and reset to that default whenever you switch shaders.
         </p>
+        <ul class="card-versions">
+          <li><b>v0.3</b> — up to 32 inputs (two-column panel past 16), some fixes.</li>
+          <li><b>v0.2</b> — P1–P4 freely assignable to any input; shader switching moved to the panel's file list.</li>
+          <li><b>v0.1</b> — first version: a slider picks the shader, P1–P3 control its first three inputs.</li>
+        </ul>
         <div class="card-params">
           <span class="tag">P1–P4 : freely assignable to any of the active shader's inputs, via the popup panel</span>
-          <span class="tag">Shader switching : click a file in the popup panel's list (no longer a slider)</span>
+          <span class="tag">Shader switching : click a file in the popup panel's list</span>
         </div>
         <a class="download-btn" href="ISFBrowser.dll">Download FreeFrame Source ISFBrowser.dll</a>
+      </div>
+    </div>
+
+    <!-- 032 ISF Effect -->
+    <div class="card" id="p032">
+      <div class="card-body">
+        <div class="card-number">032</div>
+        <div class="card-title">ISF Effect v0.1</div>
+        <p class="card-desc">
+          The <em>effect</em> sibling of the ISF Browser: runs ISF/GLSL shaders from disk on a
+          clip or layer instead of generating standalone. The clip's video becomes the shader's
+          image input (<code>inputImage</code>). Drop <code>ISFEffect.dll</code> and any
+          number of <code>.fs</code> files into the Resolume plugins folder; the same popup panel
+          lists every shader, switches live, and shows all of the active shader's inputs (up to 32,
+          in two columns past 16).
+        </p>
+        <p class="card-desc">
+          Also runs multi-pass ISF shaders, including feedback shaders with persistent float buffers
+          (the chaos-feedback and optical-feedback family, for example), with frame-rate-independent
+          timing. Each frame is uploaded to the GPU, processed, and read back, which is cheap at
+          Resolume 2.41's usual frame sizes. If a shader fails to compile, the clip passes through
+          untouched and the error is written to <code>C:\isf_effect_error.txt</code>.
+        </p>
+        <ul class="card-versions">
+          <li><b>v0.1</b> — first version.</li>
+        </ul>
+        <div class="card-params">
+          <span class="tag">P1–P4 : freely assignable to any of the active shader's inputs, via the popup panel</span>
+          <span class="tag">Shader switching : click a file in the popup panel's list</span>
+          <span class="tag">ISF PASSES / PERSISTENT / FLOAT buffers supported</span>
+        </div>
+        <a class="download-btn" href="ISFEffect.dll">Download FreeFrame Effect ISFEffect.dll</a>
       </div>
     </div>
 
